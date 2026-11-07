@@ -96,3 +96,18 @@ def test_browser_cookie_origin_and_token_secrecy(client):
         client.post("/session-probe", headers={"Origin": "http://localhost:5173"}).status_code
         == 200
     )
+
+
+def test_simulation_requires_session_and_is_repeatable(client):
+    payload = {"run_id": "00000000-0000-0000-0000-000000000042", "count": 5}
+    assert client.post("/v1/simulations/batch", json=payload).status_code == 401
+    token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    first = client.post("/v1/simulations/batch", json=payload, headers=headers)
+    repeated = client.post("/v1/simulations/batch", json=payload, headers=headers)
+    assert first.status_code == repeated.status_code == 200
+    assert first.json() == repeated.json()
+    assert len(first.json()["transactions"]) == 5
+    invalid = client.post("/v1/simulations/batch", json={**payload, "count": 100}, headers=headers)
+    assert invalid.status_code == 422
+    assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
