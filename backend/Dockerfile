@@ -4,6 +4,8 @@ RUN pip install --no-cache-dir uv==0.9.8
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 COPY src ./src
+COPY alembic.ini ./
+COPY migrations ./migrations
 ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src"
 RUN useradd --create-home app
 USER app

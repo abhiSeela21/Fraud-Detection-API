@@ -7,6 +7,7 @@ rules and a lightweight classifier. This project never processes real payments.
 ## Status
 
 Foundation in progress. Product decisions are recorded in [docs/design.md](docs/design.md).
+Anonymous browser/API sessions and the initial PostgreSQL migration are implemented.
 The current `/health` endpoint deliberately returns 503 until database and model
 readiness are implemented. Scoring and the demo are not implemented yet.
 
@@ -22,6 +23,16 @@ the backend database host to `db` and match its password to the root env file.
 Use URL-encoded credentials in database URLs. Start with `docker compose up --build`.
 Docker is required for the PostgreSQL workflow; the frontend service will be added
 when its implementation is ready.
+
+The database binds to localhost port 5433 by default (`POSTGRES_PORT` overrides it).
+Apply migrations with `docker compose exec api alembic upgrade head`.
+For API clients, POST `{"mode":"api"}` to `/v1/sessions` to receive a temporary
+bearer token. Browser mode sets an HttpOnly cookie and requires an `Origin` header
+matching `FRAUD_FRONTEND_ORIGIN`. Responses carrying sessions are not cacheable.
+When developing directly on the host, use localhost:5433 in the backend database
+URL; Compose uses db:5432. For database integration tests against the local Compose
+database, run `TEST_DATABASE_URL=compose uv run pytest` from `backend/` (the helper
+uses the env file's credentials and localhost:5433). CI uses a separate test database.
 
 From `backend/`, verify with `uv run pytest`, `uv run ruff check .`,
 `uv run ruff format --check .`, and `uv run mypy src`.
