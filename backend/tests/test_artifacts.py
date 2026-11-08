@@ -4,7 +4,7 @@ from uuid import UUID
 
 import pytest
 
-from fraud_api.artifacts import ARTIFACT_DIR, load_artifact, verified_artifact
+from fraud_api.artifacts import ARTIFACT_DIR, ModelArtifact, Tree, load_artifact, verified_artifact
 from fraud_api.features import calculate_features
 from fraud_api.model_inputs import model_inputs
 from fraud_api.scoring import Scorer
@@ -18,7 +18,7 @@ def test_artifact_scores_deterministically_with_real_model():
     scorer = Scorer()
     score = scorer.score(current, history, UUID(int=1))
     assert score == scorer.score(current, reversed(history), UUID(int=1))
-    assert score.model_version.startswith("logistic-v1-")
+    assert score.model_version.startswith("model-v2-")
     assert 0 <= score.model_probability <= 1
     assert score.recommendation == "review"
     future = generate_transaction(config, 40)
@@ -58,3 +58,42 @@ def test_model_handles_extreme_finite_inputs():
     values = model_inputs(transaction, features)
     values[5] = 1000000.0
     assert 0 <= artifact.probability(values) <= 1
+
+
+def test_forest_uses_sklearn_float32_boundary_semantics():
+    payload = json.loads((ARTIFACT_DIR / "model.json").read_text())
+    tree = {
+        "left": [1, -1, -1],
+        "right": [2, -1, -1],
+        "feature": [0, -2, -2],
+        "threshold": [1.00000003, -2, -2],
+        "probability": [0.5, 0.2, 0.8],
+    }
+    payload.update(
+        format="calibrated-forest-v1",
+        means=[],
+        scales=[],
+        coefficients=[],
+        intercept=0,
+        trees=[tree],
+    )
+    forest = ModelArtifact.model_validate(payload)
+    values = [0.0] * len(forest.input_names)
+    values[0] = 1.00000004
+    assert forest.raw_probability(values) == 0.2
+    values[0] = 2.0
+    assert forest.raw_probability(values) == 0.8
+
+
+@pytest.mark.parametrize(
+    "left,right,feature", [([0], [0], [0]), ([2], [1], [0]), ([1, -1], [1, -1], [999, -2])]
+)
+def test_malformed_tree_cannot_loop_or_reference_invalid_features(left, right, feature):
+    with pytest.raises(ValueError):
+        Tree(
+            left=left,
+            right=right,
+            feature=feature,
+            threshold=[0.0] * len(left),
+            probability=[0.5] * len(left),
+        )

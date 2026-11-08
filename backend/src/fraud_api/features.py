@@ -3,11 +3,11 @@
 import math
 from collections.abc import Iterable
 from datetime import timedelta
-from statistics import mean
+from statistics import mean, median
 
 from fraud_api.contracts import Contract, Location, Transaction
 
-FEATURE_VERSION = "features-v1"
+FEATURE_VERSION = "features-v2"
 
 
 class Features(Contract):
@@ -18,6 +18,10 @@ class Features(Contract):
     travel_speed_kmh: float
     unusual_category: bool
     unusual_channel: bool
+    amount_to_median: float
+    category_frequency: float
+    channel_frequency: float
+    seconds_since_previous: float
 
 
 def distance_km(a: Location, b: Location) -> float:
@@ -63,4 +67,19 @@ def calculate_features(current: Transaction, history: Iterable[Transaction]) -> 
         unusual_category=enough
         and all(item.merchant_category != current.merchant_category for item in prior),
         unusual_channel=enough and all(item.channel != current.channel for item in prior),
+        amount_to_median=float(current.amount) / median(float(item.amount) for item in prior)
+        if prior
+        else 1.0,
+        category_frequency=sum(
+            item.merchant_category == current.merchant_category for item in prior
+        )
+        / len(prior)
+        if prior
+        else 0.0,
+        channel_frequency=sum(item.channel == current.channel for item in prior) / len(prior)
+        if prior
+        else 0.0,
+        seconds_since_previous=(current.timestamp - prior[-1].timestamp).total_seconds()
+        if prior
+        else 0.0,
     )

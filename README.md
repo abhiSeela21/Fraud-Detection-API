@@ -11,7 +11,7 @@ Anonymous browser/API sessions, the initial PostgreSQL migration, deterministic
 simulation batches, validated transaction contracts, historical features and rule
 signals are implemented.
 Transaction/alert storage, idempotency, pagination and feedback are implemented.
-A trained scikit-learn logistic classifier now serves model-backed scoring. Startup
+A trained scikit-learn logistic classifier serves model-backed scoring. Startup
 verifies its bundled JSON artifact; `/health` reports readiness only when the
 verified model and migrated database are available. The frontend and remaining
 operational safeguards are still in progress; this is not ready for public release.
@@ -92,8 +92,9 @@ not rewrite previously stored score snapshots.
 Scores retain feature/rule/model/formula versions, features, model probability,
 rule signals, rule baseline, applied adjustment and threshold. The initial formula
 is `min(100, round(100 × model_probability) + min(40, rule_score))`. The current
-validation-selected review threshold is 42. This risk index is not a fraud
-probability; the class-weighted model output is also uncalibrated.
+threshold-cohort-selected review threshold is 45 in the v2 development artifact.
+The risk index is not a fraud probability. The model probability now receives
+sigmoid calibration fitted on a separate chronological cohort.
 
 ## Train and evaluate
 
@@ -104,20 +105,21 @@ uv sync --group training
 uv run --group training python training/train.py
 ```
 
-This regenerates 18,000 training, 6,000 validation and 6,000 later test transactions,
-compares six logistic classifier configurations, chooses validation thresholds,
-exports a small JSON model plus checksum manifest, and rebuilds the
-[evaluation report](docs/evaluation/report.md) and machine-readable results. No bulk
-dataset is committed. Seeds, prevalence assumptions and calendar partitions are
-recorded in `backend/training/config.json`. Test data never selects parameters.
+The v2 pipeline compares logistic and bounded forest models, calibrates on a
+separate cohort, selects candidates and thresholds on two later cohorts, and
+reserves a fresh 2028 final cohort. Configuration is in
+`backend/training/improved_config.json`; the committed
+[improvement protocol](docs/evaluation/improvement-plan.md) records the boundaries.
+Use `--development-only` to stop before final evaluation and `--evaluate-frozen`
+to evaluate an existing frozen artifact. No bulk dataset is committed.
 
-The first combined test result is **22.8% precision, 66.4% recall**, with 1,561 false
-alerts among 2,022 reviews on 6,000 synthetic events. It misses the validation
-recall objective of 80%, and the hybrid adds little over model-only. These are
-documented limitations, not evidence of real-world detection quality. Class
-weighting also worsens calibration; see the report's Brier-loss comparison.
+The preserved v1 combined test result was **22.8% precision, 66.4% recall**, with 1,561 false
+alerts among 2,022 reviews on 6,000 synthetic events. It missed the validation
+recall objective of 80%. Original evidence is in [baseline-v1](docs/evaluation/baseline-v1/report.md)
+and its code is preserved at commit `c27b589`. The v2 development candidate is
+frozen; the fresh final evaluation is pending. All results remain synthetic.
 
-The artifact contains standardized coefficients rather than an executable pickle.
+Artifacts contain data-only standardized coefficients or bounded trees rather than executable pickle.
 The API needs no scikit-learn/NumPy runtime dependency. Tests and training verify
 exported inference against scikit-learn and online/offline feature parity.
 Use `uv run --group training pytest` to include training-specific tests. Restart the

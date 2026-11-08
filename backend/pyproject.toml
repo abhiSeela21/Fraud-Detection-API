@@ -30,6 +30,8 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint.per-file-ignores]
 "training/train.py" = ["E501"] # Markdown report paragraphs and table rows.
 "training/benchmark.py" = ["E501"] # Markdown report paragraphs and table rows.
+"training/data.py" = ["E501"] # Dataset record construction.
+"training/report.py" = ["E501"] # Markdown report paragraphs and table rows.
 
 [tool.mypy]
 python_version = "3.12"

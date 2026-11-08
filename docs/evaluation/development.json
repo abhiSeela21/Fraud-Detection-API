@@ -1,0 +1,737 @@
+{
+  "artifact_sha256": "5b56f81639d7bd297dd9b75c2a592457172c1e9b35f9f2d02cb20b6dd14f662c",
+  "candidates": [
+    {
+      "average_precision": 0.7199079929440205,
+      "calibrated_brier": 0.03457335212105214,
+      "name": "logistic-C=0.1-weight=None",
+      "raw_brier": 0.034709729523309876,
+      "scenario_errors": {
+        "amount": {
+          "alert_rate": 0.267,
+          "alert_volume": 267,
+          "events": 1000,
+          "false_alerts": 38,
+          "fraud": 325,
+          "missed_fraud": 96,
+          "precision": 0.8576779026217228,
+          "recall": 0.7046153846153846,
+          "threshold": 48,
+          "true_alerts": 229
+        },
+        "burst": {
+          "alert_rate": 0.285,
+          "alert_volume": 171,
+          "events": 600,
+          "false_alerts": 38,
+          "fraud": 182,
+          "missed_fraud": 49,
+          "precision": 0.7777777777777778,
+          "recall": 0.7307692307692307,
+          "threshold": 48,
+          "true_alerts": 133
+        },
+        "category_channel": {
+          "alert_rate": 0.38,
+          "alert_volume": 380,
+          "events": 1000,
+          "false_alerts": 84,
+          "fraud": 305,
+          "missed_fraud": 9,
+          "precision": 0.7789473684210526,
+          "recall": 0.9704918032786886,
+          "threshold": 48,
+          "true_alerts": 296
+        },
+        "mixed": {
+          "alert_rate": 0.3725,
+          "alert_volume": 298,
+          "events": 800,
+          "false_alerts": 64,
+          "fraud": 240,
+          "missed_fraud": 6,
+          "precision": 0.785234899328859,
+          "recall": 0.975,
+          "threshold": 48,
+          "true_alerts": 234
+        },
+        "normal": {
+          "alert_rate": 0.00012195121951219512,
+          "alert_volume": 1,
+          "events": 8200,
+          "false_alerts": 1,
+          "fraud": 45,
+          "missed_fraud": 45,
+          "precision": 0.0,
+          "recall": 0.0,
+          "threshold": 48,
+          "true_alerts": 0
+        },
+        "travel": {
+          "alert_rate": 0.285,
+          "alert_volume": 114,
+          "events": 400,
+          "false_alerts": 22,
+          "fraud": 122,
+          "missed_fraud": 30,
+          "precision": 0.8070175438596491,
+          "recall": 0.7540983606557377,
+          "threshold": 48,
+          "true_alerts": 92
+        }
+      },
+      "selection": {
+        "alert_rate": 0.10258333333333333,
+        "alert_volume": 1231,
+        "false_alerts": 247,
+        "missed_fraud": 235,
+        "precision": 0.7993501218521527,
+        "recall": 0.8072190319934373,
+        "threshold": 48,
+        "true_alerts": 984
+      }
+    },
+    {
+      "average_precision": 0.7251198771945545,
+      "calibrated_brier": 0.03474709759737021,
+      "name": "logistic-C=0.1-weight=balanced",
+      "raw_brier": 0.052749189770566036,
+      "scenario_errors": {
+        "amount": {
+          "alert_rate": 0.278,
+          "alert_volume": 278,
+          "events": 1000,
+          "false_alerts": 39,
+          "fraud": 325,
+          "missed_fraud": 86,
+          "precision": 0.8597122302158273,
+          "recall": 0.7353846153846154,
+          "threshold": 44,
+          "true_alerts": 239
+        },
+        "burst": {
+          "alert_rate": 0.285,
+          "alert_volume": 171,
+          "events": 600,
+          "false_alerts": 38,
+          "fraud": 182,
+          "missed_fraud": 49,
+          "precision": 0.7777777777777778,
+          "recall": 0.7307692307692307,
+          "threshold": 44,
+          "true_alerts": 133
+        },
+        "category_channel": {
+          "alert_rate": 0.38,
+          "alert_volume": 380,
+          "events": 1000,
+          "false_alerts": 84,
+          "fraud": 305,
+          "missed_fraud": 9,
+          "precision": 0.7789473684210526,
+          "recall": 0.9704918032786886,
+          "threshold": 44,
+          "true_alerts": 296
+        },
+        "mixed": {
+          "alert_rate": 0.37375,
+          "alert_volume": 299,
+          "events": 800,
+          "false_alerts": 64,
+          "fraud": 240,
+          "missed_fraud": 5,
+          "precision": 0.7859531772575251,
+          "recall": 0.9791666666666666,
+          "threshold": 44,
+          "true_alerts": 235
+        },
+        "normal": {
+          "alert_rate": 0.00012195121951219512,
+          "alert_volume": 1,
+          "events": 8200,
+          "false_alerts": 1,
+          "fraud": 45,
+          "missed_fraud": 45,
+          "precision": 0.0,
+          "recall": 0.0,
+          "threshold": 44,
+          "true_alerts": 0
+        },
+        "travel": {
+          "alert_rate": 0.285,
+          "alert_volume": 114,
+          "events": 400,
+          "false_alerts": 22,
+          "fraud": 122,
+          "missed_fraud": 30,
+          "precision": 0.8070175438596491,
+          "recall": 0.7540983606557377,
+          "threshold": 44,
+          "true_alerts": 92
+        }
+      },
+      "selection": {
+        "alert_rate": 0.10358333333333333,
+        "alert_volume": 1243,
+        "false_alerts": 248,
+        "missed_fraud": 224,
+        "precision": 0.8004827031375704,
+        "recall": 0.8162428219852338,
+        "threshold": 44,
+        "true_alerts": 995
+      }
+    },
+    {
+      "average_precision": 0.7195741696443164,
+      "calibrated_brier": 0.0345548245538716,
+      "name": "logistic-C=1.0-weight=None",
+      "raw_brier": 0.034566644860426904,
+      "scenario_errors": {
+        "amount": {
+          "alert_rate": 0.269,
+          "alert_volume": 269,
+          "events": 1000,
+          "false_alerts": 39,
+          "fraud": 325,
+          "missed_fraud": 95,
+          "precision": 0.8550185873605948,
+          "recall": 0.7076923076923077,
+          "threshold": 49,
+          "true_alerts": 230
+        },
+        "burst": {
+          "alert_rate": 0.285,
+          "alert_volume": 171,
+          "events": 600,
+          "false_alerts": 38,
+          "fraud": 182,
+          "missed_fraud": 49,
+          "precision": 0.7777777777777778,
+          "recall": 0.7307692307692307,
+          "threshold": 49,
+          "true_alerts": 133
+        },
+        "category_channel": {
+          "alert_rate": 0.38,
+          "alert_volume": 380,
+          "events": 1000,
+          "false_alerts": 84,
+          "fraud": 305,
+          "missed_fraud": 9,
+          "precision": 0.7789473684210526,
+          "recall": 0.9704918032786886,
+          "threshold": 49,
+          "true_alerts": 296
+        },
+        "mixed": {
+          "alert_rate": 0.3725,
+          "alert_volume": 298,
+          "events": 800,
+          "false_alerts": 64,
+          "fraud": 240,
+          "missed_fraud": 6,
+          "precision": 0.785234899328859,
+          "recall": 0.975,
+          "threshold": 49,
+          "true_alerts": 234
+        },
+        "normal": {
+          "alert_rate": 0.00012195121951219512,
+          "alert_volume": 1,
+          "events": 8200,
+          "false_alerts": 1,
+          "fraud": 45,
+          "missed_fraud": 45,
+          "precision": 0.0,
+          "recall": 0.0,
+          "threshold": 49,
+          "true_alerts": 0
+        },
+        "travel": {
+          "alert_rate": 0.285,
+          "alert_volume": 114,
+          "events": 400,
+          "false_alerts": 22,
+          "fraud": 122,
+          "missed_fraud": 30,
+          "precision": 0.8070175438596491,
+          "recall": 0.7540983606557377,
+          "threshold": 49,
+          "true_alerts": 92
+        }
+      },
+      "selection": {
+        "alert_rate": 0.10275,
+        "alert_volume": 1233,
+        "false_alerts": 248,
+        "missed_fraud": 234,
+        "precision": 0.7988645579886455,
+        "recall": 0.8080393765381461,
+        "threshold": 49,
+        "true_alerts": 985
+      }
+    },
+    {
+      "average_precision": 0.724775555321054,
+      "calibrated_brier": 0.03479638867120273,
+      "name": "logistic-C=1.0-weight=balanced",
+      "raw_brier": 0.05281528624952959,
+      "scenario_errors": {
+        "amount": {
+          "alert_rate": 0.276,
+          "alert_volume": 276,
+          "events": 1000,
+          "false_alerts": 39,
+          "fraud": 325,
+          "missed_fraud": 88,
+          "precision": 0.8586956521739131,
+          "recall": 0.7292307692307692,
+          "threshold": 45,
+          "true_alerts": 237
+        },
+        "burst": {
+          "alert_rate": 0.285,
+          "alert_volume": 171,
+          "events": 600,
+          "false_alerts": 38,
+          "fraud": 182,
+          "missed_fraud": 49,
+          "precision": 0.7777777777777778,
+          "recall": 0.7307692307692307,
+          "threshold": 45,
+          "true_alerts": 133
+        },
+        "category_channel": {
+          "alert_rate": 0.377,
+          "alert_volume": 377,
+          "events": 1000,
+          "false_alerts": 83,
+          "fraud": 305,
+          "missed_fraud": 11,
+          "precision": 0.7798408488063661,
+          "recall": 0.9639344262295082,
+          "threshold": 45,
+          "true_alerts": 294
+        },
+        "mixed": {
+          "alert_rate": 0.37375,
+          "alert_volume": 299,
+          "events": 800,
+          "false_alerts": 64,
+          "fraud": 240,
+          "missed_fraud": 5,
+          "precision": 0.7859531772575251,
+          "recall": 0.9791666666666666,
+          "threshold": 45,
+          "true_alerts": 235
+        },
+        "normal": {
+          "alert_rate": 0.00012195121951219512,
+          "alert_volume": 1,
+          "events": 8200,
+          "false_alerts": 1,
+          "fraud": 45,
+          "missed_fraud": 45,
+          "precision": 0.0,
+          "recall": 0.0,
+          "threshold": 45,
+          "true_alerts": 0
+        },
+        "travel": {
+          "alert_rate": 0.285,
+          "alert_volume": 114,
+          "events": 400,
+          "false_alerts": 22,
+          "fraud": 122,
+          "missed_fraud": 30,
+          "precision": 0.8070175438596491,
+          "recall": 0.7540983606557377,
+          "threshold": 45,
+          "true_alerts": 92
+        }
+      },
+      "selection": {
+        "alert_rate": 0.10316666666666667,
+        "alert_volume": 1238,
+        "false_alerts": 247,
+        "missed_fraud": 228,
+        "precision": 0.8004846526655897,
+        "recall": 0.8129614438063987,
+        "threshold": 45,
+        "true_alerts": 991
+      }
+    },
+    {
+      "average_precision": 0.6589605754478582,
+      "calibrated_brier": 0.03831477478167894,
+      "name": "forest-depth=4",
+      "raw_brier": 0.038323528746837913,
+      "scenario_errors": {
+        "amount": {
+          "alert_rate": 0.268,
+          "alert_volume": 268,
+          "events": 1000,
+          "false_alerts": 39,
+          "fraud": 325,
+          "missed_fraud": 96,
+          "precision": 0.8544776119402985,
+          "recall": 0.7046153846153846,
+          "threshold": 38,
+          "true_alerts": 229
+        },
+        "burst": {
+          "alert_rate": 0.29,
+          "alert_volume": 174,
+          "events": 600,
+          "false_alerts": 41,
+          "fraud": 182,
+          "missed_fraud": 49,
+          "precision": 0.764367816091954,
+          "recall": 0.7307692307692307,
+          "threshold": 38,
+          "true_alerts": 133
+        },
+        "category_channel": {
+          "alert_rate": 0.383,
+          "alert_volume": 383,
+          "events": 1000,
+          "false_alerts": 87,
+          "fraud": 305,
+          "missed_fraud": 9,
+          "precision": 0.7728459530026109,
+          "recall": 0.9704918032786886,
+          "threshold": 38,
+          "true_alerts": 296
+        },
+        "mixed": {
+          "alert_rate": 0.365,
+          "alert_volume": 292,
+          "events": 800,
+          "false_alerts": 64,
+          "fraud": 240,
+          "missed_fraud": 12,
+          "precision": 0.7808219178082192,
+          "recall": 0.95,
+          "threshold": 38,
+          "true_alerts": 228
+        },
+        "normal": {
+          "alert_rate": 0.011707317073170732,
+          "alert_volume": 96,
+          "events": 8200,
+          "false_alerts": 96,
+          "fraud": 45,
+          "missed_fraud": 45,
+          "precision": 0.0,
+          "recall": 0.0,
+          "threshold": 38,
+          "true_alerts": 0
+        },
+        "travel": {
+          "alert_rate": 0.2875,
+          "alert_volume": 115,
+          "events": 400,
+          "false_alerts": 23,
+          "fraud": 122,
+          "missed_fraud": 30,
+          "precision": 0.8,
+          "recall": 0.7540983606557377,
+          "threshold": 38,
+          "true_alerts": 92
+        }
+      },
+      "selection": {
+        "alert_rate": 0.11066666666666666,
+        "alert_volume": 1328,
+        "false_alerts": 350,
+        "missed_fraud": 241,
+        "precision": 0.7364457831325302,
+        "recall": 0.8022969647251845,
+        "threshold": 38,
+        "true_alerts": 978
+      }
+    },
+    {
+      "average_precision": 0.7344284408909362,
+      "calibrated_brier": 0.033841867007362275,
+      "name": "forest-depth=6",
+      "raw_brier": 0.03382444418520845,
+      "scenario_errors": {
+        "amount": {
+          "alert_rate": 0.263,
+          "alert_volume": 263,
+          "events": 1000,
+          "false_alerts": 38,
+          "fraud": 325,
+          "missed_fraud": 100,
+          "precision": 0.8555133079847909,
+          "recall": 0.6923076923076923,
+          "threshold": 52,
+          "true_alerts": 225
+        },
+        "burst": {
+          "alert_rate": 0.2866666666666667,
+          "alert_volume": 172,
+          "events": 600,
+          "false_alerts": 39,
+          "fraud": 182,
+          "missed_fraud": 49,
+          "precision": 0.7732558139534884,
+          "recall": 0.7307692307692307,
+          "threshold": 52,
+          "true_alerts": 133
+        },
+        "category_channel": {
+          "alert_rate": 0.38,
+          "alert_volume": 380,
+          "events": 1000,
+          "false_alerts": 84,
+          "fraud": 305,
+          "missed_fraud": 9,
+          "precision": 0.7789473684210526,
+          "recall": 0.9704918032786886,
+          "threshold": 52,
+          "true_alerts": 296
+        },
+        "mixed": {
+          "alert_rate": 0.36875,
+          "alert_volume": 295,
+          "events": 800,
+          "false_alerts": 64,
+          "fraud": 240,
+          "missed_fraud": 9,
+          "precision": 0.7830508474576271,
+          "recall": 0.9625,
+          "threshold": 52,
+          "true_alerts": 231
+        },
+        "normal": {
+          "alert_rate": 0.0014634146341463415,
+          "alert_volume": 12,
+          "events": 8200,
+          "false_alerts": 12,
+          "fraud": 45,
+          "missed_fraud": 45,
+          "precision": 0.0,
+          "recall": 0.0,
+          "threshold": 52,
+          "true_alerts": 0
+        },
+        "travel": {
+          "alert_rate": 0.285,
+          "alert_volume": 114,
+          "events": 400,
+          "false_alerts": 22,
+          "fraud": 122,
+          "missed_fraud": 30,
+          "precision": 0.8070175438596491,
+          "recall": 0.7540983606557377,
+          "threshold": 52,
+          "true_alerts": 92
+        }
+      },
+      "selection": {
+        "alert_rate": 0.103,
+        "alert_volume": 1236,
+        "false_alerts": 259,
+        "missed_fraud": 242,
+        "precision": 0.790453074433657,
+        "recall": 0.8014766201804758,
+        "threshold": 52,
+        "true_alerts": 977
+      }
+    },
+    {
+      "average_precision": 0.74385060478589,
+      "calibrated_brier": 0.029625796955520346,
+      "name": "forest-depth=8",
+      "raw_brier": 0.029719944309835048,
+      "scenario_errors": {
+        "amount": {
+          "alert_rate": 0.283,
+          "alert_volume": 283,
+          "events": 1000,
+          "false_alerts": 40,
+          "fraud": 325,
+          "missed_fraud": 82,
+          "precision": 0.8586572438162544,
+          "recall": 0.7476923076923077,
+          "threshold": 68,
+          "true_alerts": 243
+        },
+        "burst": {
+          "alert_rate": 0.285,
+          "alert_volume": 171,
+          "events": 600,
+          "false_alerts": 38,
+          "fraud": 182,
+          "missed_fraud": 49,
+          "precision": 0.7777777777777778,
+          "recall": 0.7307692307692307,
+          "threshold": 68,
+          "true_alerts": 133
+        },
+        "category_channel": {
+          "alert_rate": 0.374,
+          "alert_volume": 374,
+          "events": 1000,
+          "false_alerts": 82,
+          "fraud": 305,
+          "missed_fraud": 13,
+          "precision": 0.7807486631016043,
+          "recall": 0.9573770491803278,
+          "threshold": 68,
+          "true_alerts": 292
+        },
+        "mixed": {
+          "alert_rate": 0.375,
+          "alert_volume": 300,
+          "events": 800,
+          "false_alerts": 64,
+          "fraud": 240,
+          "missed_fraud": 4,
+          "precision": 0.7866666666666666,
+          "recall": 0.9833333333333333,
+          "threshold": 68,
+          "true_alerts": 236
+        },
+        "normal": {
+          "alert_rate": 0.0004878048780487805,
+          "alert_volume": 4,
+          "events": 8200,
+          "false_alerts": 4,
+          "fraud": 45,
+          "missed_fraud": 45,
+          "precision": 0.0,
+          "recall": 0.0,
+          "threshold": 68,
+          "true_alerts": 0
+        },
+        "travel": {
+          "alert_rate": 0.285,
+          "alert_volume": 114,
+          "events": 400,
+          "false_alerts": 22,
+          "fraud": 122,
+          "missed_fraud": 30,
+          "precision": 0.8070175438596491,
+          "recall": 0.7540983606557377,
+          "threshold": 68,
+          "true_alerts": 92
+        }
+      },
+      "selection": {
+        "alert_rate": 0.10383333333333333,
+        "alert_volume": 1246,
+        "false_alerts": 250,
+        "missed_fraud": 223,
+        "precision": 0.7993579454253612,
+        "recall": 0.8170631665299426,
+        "threshold": 68,
+        "true_alerts": 996
+      }
+    }
+  ],
+  "config": {
+    "background_fraud_probability": 0.005,
+    "bootstrap_repetitions": 400,
+    "calibration_runs": 60,
+    "calibration_start": "2025-01-01T00:00:00+00:00",
+    "dataset_version": "synthetic-v2-evaluation",
+    "final_test_runs": 90,
+    "final_test_start": "2028-01-01T00:00:00+00:00",
+    "forest_depth_candidates": [
+      4,
+      6,
+      8
+    ],
+    "forest_min_samples_leaf": 30,
+    "forest_trees": 48,
+    "incident_fraud_probability": 0.8,
+    "logistic_candidates": [
+      0.1,
+      1.0
+    ],
+    "normal_run_fraction": 0.65,
+    "seed": 20261107,
+    "selection_runs": 60,
+    "selection_start": "2026-01-01T00:00:00+00:00",
+    "threshold_runs": 60,
+    "threshold_start": "2027-01-01T00:00:00+00:00",
+    "training_runs": 120,
+    "training_start": "2024-01-01T00:00:00+00:00",
+    "transactions_per_run": 200,
+    "validation_recall_floor": 0.8
+  },
+  "environment": {
+    "numpy": "2.5.4",
+    "python": "3.14.0",
+    "sklearn": "1.9.1"
+  },
+  "model_version": "model-v2-3e3ceea77cf2",
+  "partitions": {
+    "calibration": {
+      "count": 12000,
+      "end": "2025-02-09T08:00:00+00:00",
+      "fraud": 1232,
+      "prevalence": 0.10266666666666667,
+      "runs": 60,
+      "sha256": "4bdad36e4fd9793a8940079f88384fd930c3488e01fef9e1294c1b9a8bcb4737",
+      "start": "2025-01-01T00:00:00+00:00"
+    },
+    "selection": {
+      "count": 12000,
+      "end": "2026-02-09T08:00:00+00:00",
+      "fraud": 1219,
+      "prevalence": 0.10158333333333333,
+      "runs": 60,
+      "sha256": "eb8f5d58dd347193d603cc02b76589be2ef454f016fa6e37f2b6af18a6c8c606",
+      "start": "2026-01-01T00:00:00+00:00"
+    },
+    "threshold": {
+      "count": 12000,
+      "end": "2027-02-09T08:00:00+00:00",
+      "fraud": 1412,
+      "prevalence": 0.11766666666666667,
+      "runs": 60,
+      "sha256": "7288d1944d26a65c25a80a9eec25c614d6df0e9ae1dbd0b2956dd2d9dfc4797f",
+      "start": "2027-01-01T00:00:00+00:00"
+    },
+    "training": {
+      "count": 24000,
+      "end": "2024-02-09T08:00:00+00:00",
+      "fraud": 2360,
+      "prevalence": 0.09833333333333333,
+      "runs": 120,
+      "sha256": "9508f8122aeb9f91802eb37b7d135a59199f72ea068149cf27fa28616bc26936",
+      "start": "2024-01-01T00:00:00+00:00"
+    }
+  },
+  "source_sha256": {
+    "src/fraud_api/artifacts.py": "704e2877b2b1789704700d2c125fb9c6964c07907814c87f78d67a08d99db9b5",
+    "src/fraud_api/features.py": "6f263e7aa0bd06ecf2fa03f549414c2a3a7d294c355d1aa6651c6671e2bd31ff",
+    "src/fraud_api/formula.py": "eb047f3a5c4b032c24d9c087ade9a5d704f26c587e6aeddf63c2c7b37d057e26",
+    "src/fraud_api/model_inputs.py": "5041a4dc8fcfa359208cf2dc40f73dce774f91622832f20a0864ac57355f92b0",
+    "src/fraud_api/rules.py": "a9ffcd533cddb579806cdcdcb27961dcd39e7e4d9db3f7da0a77eb1454b85001",
+    "src/fraud_api/simulation.py": "b070e7bac669277a3aa67defc4649cd793280305a72cccc532158ac1e92d8c90",
+    "training/data.py": "5b902abcb4aadbc02aba0e09fb4d6924f779bcc3f398e6340416fedecea2ec30",
+    "training/report.py": "4c717093809798f076d15fa8ea5cb756f63dee2df437025168ecf4577a591816",
+    "training/train.py": "22b825acda6b69f19cc0530baac5b03421fe90264e8eda07c9fb8d3b1c3c4823"
+  },
+  "threshold_metrics": {
+    "alert_rate": 0.11591666666666667,
+    "alert_volume": 1391,
+    "false_alerts": 260,
+    "missed_fraud": 281,
+    "precision": 0.8130841121495327,
+    "recall": 0.8009915014164306,
+    "threshold": 45,
+    "true_alerts": 1131
+  },
+  "thresholds": {
+    "combined": 45,
+    "model_only": 42,
+    "rules_only": 0
+  },
+  "winner": "logistic-C=1.0-weight=balanced"
+}
