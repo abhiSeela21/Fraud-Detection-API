@@ -1,75 +1,130 @@
-# Synthetic detection evaluation
+# Synthetic fraud evaluation — model v2
 
-All data is synthetic. Results do not establish real-world fraud detection performance.
+Synthetic data only; no real-world performance claim.
 
-Reproduce from `backend/`: `uv sync --group training && uv run --group training python training/train.py`.
+## Reproduction and evaluation boundary
 
-## Dataset and leakage controls
+From `backend/`: `uv sync --group training` then `uv run --group training python training/train.py`. This recreates development cohorts, candidate selection, calibration, threshold tuning, the artifact and final report. Use `--development-only` to stop before final testing, then `--evaluate-frozen` to evaluate the frozen artifact. Original v1 evidence is in `baseline-v1/`; its implementation is preserved at Git commit `c27b589`.
 
-The generator invents commuter, traveler and business spending. Incident windows inject amount spikes, bursts, travel or category/channel shifts. Eighty percent of incident-window events are labeled fraud; the remainder are legitimate lookalikes. A 0.5% background fraud probability introduces low-signal fraud. These probabilities are simulation assumptions, not observed payment statistics. Labels are never returned by the scoring API or included in model inputs.
+The original 2026 test was inspected and became development evidence. Model v2 reserves a new 2028 cohort, with distinct seeds and run IDs. The protocol was committed before experiments. Candidate, calibration and thresholds were frozen before this cohort was generated. Final results below did not change those choices. Repeated runs verify reproducibility, not independent replications.
 
-Each cohort has disjoint account/run seeds and a later non-overlapping calendar window. Every feature uses only earlier events from its own account/run. Entire run histories are generated in order, including cold starts. No scaling, weighting or fitting uses validation/test data. This measures future synthetic cohorts, not performance on recurring real customers.
+## Synthetic assumptions and leakage controls
 
-| Partition | Events | Fraud | Prevalence | Start | End |
-|---|---:|---:|---:|---|---|
-| training | 18000 | 1839 | 10.22% | 2024-01-01T00:00:00+00:00 | 2024-02-09T08:00:00+00:00 |
-| validation | 6000 | 678 | 11.30% | 2025-01-01T00:00:00+00:00 | 2025-02-09T08:00:00+00:00 |
-| test | 6000 | 694 | 11.57% | 2026-01-01T00:00:00+00:00 | 2026-02-09T08:00:00+00:00 |
+Generator-v1 and label assumptions were retained. Invented profiles are commuter, traveler and business. Incident windows create amount spikes, repeated transactions, geographic changes or category/channel shifts. Labels are fraud with probability 0.8 inside those windows and 0.005 elsewhere. Twenty percent of incident-looking events are legitimate lookalikes; normal runs can have legitimate amount outliers. These are invented rates, not observed payment statistics. Labels never enter inputs or API responses.
 
-## Validation selection
+All historical features use earlier event timestamps within the same account/run. A fresh run starts with no history. No scaler or estimator is fitted outside training. A separate calibration cohort fits a sigmoid to held-out raw model logits; it has no class weighting. Separate later cohorts choose the candidate and final operating thresholds. No oversampling or balancing of evaluation cohorts occurs.
 
-Candidates are standardized scikit-learn logistic classifiers with three regularization strengths and optional training-only class weighting. Select maximum validation combined-score precision subject to 80% recall; break candidate ties by lower Brier loss. Threshold ties favor recall then the higher threshold. The recall floor is a demo objective, not a real financial cost model. No test-based retuning or refit occurs.
+| Cohort | Runs | Events | Fraud | Prevalence | Calendar range |
+|---|---:|---:|---:|---:|---|
+| training | 120 | 24000 | 2360 | 9.83% | 2024-01-01 – 2024-02-09 |
+| calibration | 60 | 12000 | 1232 | 10.27% | 2025-01-01 – 2025-02-09 |
+| selection | 60 | 12000 | 1219 | 10.16% | 2026-01-01 – 2026-02-09 |
+| threshold | 60 | 12000 | 1412 | 11.77% | 2027-01-01 – 2027-02-09 |
+| final_test | 90 | 18000 | 1820 | 10.11% | 2028-01-01 – 2028-02-09 |
 
-| Candidate | Precision | Recall | Threshold | Brier loss |
-|---|---:|---:|---:|---:|
-| logistic-C=0.1-weight=None | 0.240 | 0.824 | 8 | 0.0689 |
-| logistic-C=0.1-weight=balanced | 0.256 | 0.802 | 42 | 0.1498 |
-| logistic-C=1.0-weight=None | 0.241 | 0.826 | 8 | 0.0689 |
-| logistic-C=1.0-weight=balanced | 0.256 | 0.804 | 42 | 0.1497 |
-| logistic-C=10.0-weight=None | 0.241 | 0.826 | 8 | 0.0689 |
-| logistic-C=10.0-weight=balanced | 0.256 | 0.804 | 42 | 0.1497 |
+## Features and candidate selection
 
-Selected `logistic-C=0.1-weight=balanced`; model version `logistic-v1-cdc4def66121`.
+Added median-relative amount, historical category/channel frequency, elapsed time since prior activity, and current channel. Exact history count was replaced in model inputs with a has-history indicator to reduce dependence on the generator's fixed incident positions. Seed, scenario, profile, run ID, account ID, event index and visitor feedback are excluded. Rules still use the same versioned rule logic. This is a joint feature/model/calibration/training-size update, not an isolated causal test of any one change.
 
-## Untouched later test period
+Four regularized logistic configurations and three bounded random forests were compared. Every candidate receives separate-cohort sigmoid calibration. Selection maximizes precision subject to 80% selection recall, breaking exact ties by lower calibrated Brier loss. Threshold ties favor recall, then higher threshold. The selected model is not refitted on later cohorts. Final thresholds are independently selected on the threshold cohort under the same recall constraint.
 
-The validation recall floor is a selection constraint, not a test guarantee. Combined test recall is 66.4% against the 80% validation objective. Rules select threshold 0 and review 100.0% of test events. The combined minus model-only precision difference is 0.0010. Inspect these results before claiming that the target generalizes or that hybrid scoring adds useful value.
+| Candidate | Selection precision | Recall | Threshold | Raw Brier | Calibrated Brier |
+|---|---:|---:|---:|---:|---:|
+| logistic-C=0.1-weight=None | 0.7994 | 0.8072 | 48 | 0.0347 | 0.0346 |
+| logistic-C=0.1-weight=balanced | 0.8005 | 0.8162 | 44 | 0.0527 | 0.0347 |
+| logistic-C=1.0-weight=None | 0.7989 | 0.8080 | 49 | 0.0346 | 0.0346 |
+| logistic-C=1.0-weight=balanced | 0.8005 | 0.8130 | 45 | 0.0528 | 0.0348 |
+| forest-depth=4 | 0.7364 | 0.8023 | 38 | 0.0383 | 0.0383 |
+| forest-depth=6 | 0.7905 | 0.8015 | 52 | 0.0338 | 0.0338 |
+| forest-depth=8 | 0.7994 | 0.8171 | 68 | 0.0297 | 0.0296 |
 
-Each approach's threshold was selected independently on validation under the same recall floor. The final score is rounded model probability × 100 plus rule adjustments capped at 40, capped overall at 100. That score is a ranking index, not a calibrated fraud probability. Rule signals describe rules and do not explain the classifier.
+Selected **logistic-C=1.0-weight=balanced**; version `model-v2-3e3ceea77cf2`; artifact 1,375 bytes. Candidate precision differences near the top are tiny and do not establish statistical superiority of one family. The predefined criterion was retained even where another candidate had a better Brier score.
 
-| Approach | Threshold | Precision | Recall | False alerts | Total alerts | Alert rate |
+## Fresh final cohort
+
+Historical v1 is the frozen original model, original eight-feature contract and original threshold. All other thresholds come from the new threshold cohort. Comparisons use the same final events and labels. The combined score is rounded model probability × 100 plus rule adjustments capped at 40, capped overall at 100. The score is an index, not a probability. Rules are not explanations of the classifier.
+
+| Approach | Threshold | Precision | Recall | False alerts | Missed fraud | Total alerts | Alert rate |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| historical_v1 | 42 | 0.234 | 0.810 | 4827 | 345 | 6302 | 35.01% |
+| rules_only | 0 | 0.101 | 1.000 | 16180 | 0 | 18000 | 100.00% |
+| model_only | 42 | 0.794 | 0.776 | 367 | 407 | 1780 | 9.89% |
+| combined | 45 | 0.796 | 0.767 | 357 | 424 | 1753 | 9.74% |
+
+The combined point estimate **misses** the 80% recall objective. That does not guarantee future recall. Rules at threshold zero review everything; this exposes their inability to achieve the recall floor usefully. Compare model-only with combined directly before claiming hybrid value.
+
+### Run-cluster bootstrap uncertainty
+
+Approximate 95% percentile intervals from 400 deterministic resamples of entire simulation runs, preserving within-run dependence. The same run samples are used across approaches. These intervals reflect the synthetic cohort and generator only; they are not real-world confidence bounds and do not include model-selection uncertainty.
+
+| Approach | Precision interval | Recall interval | Alert-rate interval |
+|---|---|---|---|
+| historical_v1 | 0.168–0.291 | 0.733–0.877 | 0.312–0.387 |
+| rules_only | 0.073–0.128 | 1.000–1.000 | 1.000–1.000 |
+| model_only | 0.779–0.808 | 0.742–0.812 | 0.070–0.126 |
+| combined | 0.782–0.811 | 0.731–0.804 | 0.069–0.125 |
+
+## Probability calibration
+
+Final Brier loss: raw **0.0541**, calibrated **0.0383**, constant training-prevalence reference **0.0909** (lower is better). Final average precision: **0.6962**. Calibration was fitted without final labels; an improvement is measured, not assumed.
+
+| Probability bin | Count | Mean probability | Observed fraud rate |
+|---|---:|---:|---:|
+| 0.0–0.1 | 15911 | 0.020 | 0.019 |
+| 0.1–0.2 | 162 | 0.135 | 0.160 |
+| 0.2–0.3 | 70 | 0.246 | 0.557 |
+| 0.3–0.4 | 71 | 0.352 | 0.606 |
+| 0.4–0.5 | 109 | 0.454 | 0.706 |
+| 0.5–0.6 | 159 | 0.556 | 0.849 |
+| 0.6–0.7 | 286 | 0.654 | 0.822 |
+| 0.7–0.8 | 481 | 0.754 | 0.780 |
+| 0.8–0.9 | 558 | 0.845 | 0.799 |
+| 0.9–1.0 | 193 | 0.967 | 0.772 |
+
+## Scenario errors (combined)
+
+| Group | Events | Fraud | Precision | Recall | False alerts | Missed fraud |
 |---|---:|---:|---:|---:|---:|---:|
-| rules_only | 0 | 0.116 | 1.000 | 5306 | 6000 | 100.00% |
-| model_only | 42 | 0.227 | 0.659 | 1556 | 2013 | 33.55% |
-| combined | 42 | 0.228 | 0.664 | 1561 | 2022 | 33.70% |
+| amount | 2000 | 608 | 0.801 | 0.766 | 116 | 142 |
+| burst | 1600 | 486 | 0.805 | 0.755 | 89 | 119 |
+| category_channel | 600 | 185 | 0.801 | 0.978 | 45 | 4 |
+| mixed | 400 | 120 | 0.789 | 0.967 | 31 | 4 |
+| normal | 12200 | 57 | 0.000 | 0.000 | 0 | 57 |
+| travel | 1200 | 364 | 0.778 | 0.731 | 76 | 98 |
 
-Model probability Brier loss: 0.1565; average precision: 0.4987. Brier loss is a calibration diagnostic, not a guarantee of calibrated probabilities. No separate probability calibrator was fitted.
+## Profile errors (combined)
 
-A constant training-prevalence predictor has test Brier loss 0.1025. Lower Brier loss is better. Class weighting changes the training prior; the selected classifier's raw probability outputs are uncalibrated. Model selection prioritized validation precision at the recall constraint, not calibration alone.
+| Group | Events | Fraud | Precision | Recall | False alerts | Missed fraud |
+|---|---:|---:|---:|---:|---:|---:|
+| business | 6000 | 682 | 0.796 | 0.716 | 125 | 194 |
+| commuter | 6000 | 683 | 0.791 | 0.794 | 143 | 141 |
+| traveler | 6000 | 455 | 0.804 | 0.804 | 89 | 89 |
 
-## Combined threshold tradeoff (test; descriptive only)
+Background fraud labels in normal behavior often have no observable signal; these misses remain in reported recall. Burst/travel windows also label the first event before subsequent velocity evidence exists. This irreducible ambiguity is intentional. Strong category/channel results also reflect simple generator patterns; they do not prove resistance to real adversaries.
+
+## Combined threshold tradeoffs (descriptive final evidence)
+
+The deployed threshold was frozen earlier; this table is not used to retune it.
 
 | Threshold | Precision | Recall | False alerts | Total alerts |
 |---|---:|---:|---:|---:|
-| 0 | 0.116 | 1.000 | 5306 | 6000 |
-| 10 | 0.117 | 0.999 | 5229 | 5922 |
-| 20 | 0.127 | 0.941 | 4502 | 5155 |
-| 30 | 0.151 | 0.807 | 3159 | 3719 |
-| 40 | 0.211 | 0.684 | 1777 | 2252 |
-| 42 | 0.228 | 0.664 | 1561 | 2022 |
-| 50 | 0.326 | 0.584 | 839 | 1244 |
-| 60 | 0.508 | 0.530 | 357 | 725 |
-| 70 | 0.639 | 0.451 | 177 | 490 |
-| 80 | 0.690 | 0.385 | 120 | 387 |
-| 90 | 0.708 | 0.336 | 96 | 329 |
-| 100 | 0.768 | 0.287 | 60 | 259 |
+| 0 | 0.101 | 1.000 | 16180 | 18000 |
+| 10 | 0.646 | 0.842 | 839 | 2372 |
+| 20 | 0.701 | 0.830 | 644 | 2154 |
+| 30 | 0.782 | 0.809 | 410 | 1883 |
+| 40 | 0.794 | 0.785 | 371 | 1800 |
+| 45 | 0.796 | 0.767 | 357 | 1753 |
+| 50 | 0.800 | 0.743 | 338 | 1691 |
+| 60 | 0.795 | 0.693 | 325 | 1586 |
+| 70 | 0.796 | 0.633 | 296 | 1448 |
+| 80 | 0.795 | 0.483 | 226 | 1105 |
+| 90 | 0.779 | 0.276 | 143 | 646 |
+| 100 | 0.776 | 0.234 | 123 | 548 |
 
-## Limitations and artifact
+## Runtime and remaining limitations
 
-Generator assumptions dominate these results. Labels overlap but lack realistic adversaries, merchant diversity, feedback delay or concept drift. No confidence interval or independent real-data validation is claimed. A combined approach may not outperform model-only; retain that evidence rather than changing the test-based decision. Run/account ID, seed, scenario, profile and label are excluded from the eight numeric model inputs.
+The artifact is data-only JSON, protected against accidental corruption by SHA-256 and checked for feature, input, rule, formula and structural compatibility. Exported calibrated predictions for every candidate match scikit-learn on the selection cohort within 1e-12 absolute tolerance. Forest inference reproduces sklearn's float32 input conversion and validates acyclic tree topology. Only the selected model is shipped; sklearn and NumPy remain training-only dependencies.
 
-Only standardized logistic coefficients are exported as a small data-only JSON file. Runtime inference is checked against scikit-learn to 1e-12 on validation. A SHA-256 manifest detects accidental corruption, not a malicious replacement of both files. Startup validates feature/input/rule/formula versions and dimensions; loading does not execute pickle. Full configuration, environment and all 101 threshold rows are in `results.json`.
+The generator still uses a fixed periodic incident schedule, few locations and limited merchant behavior. No concept drift, delayed labels, novel adversaries or independent real-data validation is modeled. Disjoint calendar windows are chronological synthetic cohorts, not evidence of real temporal drift robustness. Larger numbers of synthetic events do not remove these limitations. See `latency.md` for warm local API measurements; hosting wake-up is unmeasured.
 
-API latency is measured separately by `training/benchmark.py` against the running API and PostgreSQL; see `latency.md` when available. Training runtime is not API latency.
-
-References: [scikit-learn leakage guidance](https://scikit-learn.org/stable/common_pitfalls.html), [held-out model selection](https://scikit-learn.org/stable/modules/grid_search.html), [model persistence](https://scikit-learn.org/stable/model_persistence.html).
+References: [scikit-learn calibration and disjoint fitting data](https://scikit-learn.org/stable/modules/calibration.html), [model persistence](https://scikit-learn.org/stable/model_persistence.html), [random forests](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html).

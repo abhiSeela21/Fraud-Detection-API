@@ -8,7 +8,7 @@ import pytest
 np = pytest.importorskip("numpy")
 pytest.importorskip("sklearn")
 
-from training.train import dataset, export, logits, select_threshold  # noqa: E402  # noqa: E402
+from training.train import calibration_bins, dataset, export, logits, select_threshold  # noqa: E402
 
 
 def test_threshold_selection_uses_recall_constraint():
@@ -16,6 +16,13 @@ def test_threshold_selection_uses_recall_constraint():
     scores = np.array([1, 60, 80, 70])
     assert select_threshold(labels, scores, 1.0)["threshold"] == 60
     assert select_threshold(labels, scores, 0.5)["threshold"] == 80
+
+
+def test_calibration_bins_assign_every_boundary_probability_once():
+    probabilities = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+    rows = calibration_bins(np.zeros(len(probabilities)), probabilities)
+    assert sum(row["count"] for row in rows) == len(probabilities)
+    assert all(row["count"] > 0 for row in rows)
 
 
 def test_later_partition_changes_cannot_affect_training_features_or_labels():

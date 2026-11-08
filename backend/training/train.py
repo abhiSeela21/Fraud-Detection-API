@@ -105,10 +105,10 @@ def breakdown(data, scores, threshold, field):
 
 def calibration_bins(labels, probabilities):
     result = []
-    for lower in np.arange(0, 1, 0.1):
-        mask = (probabilities >= lower) & (
-            probabilities < lower + 0.1 + (1e-12 if lower > 0.89 else 0)
-        )
+    edges = np.linspace(0.0, 1.0, 11)
+    assigned = np.clip(np.searchsorted(edges, probabilities, side="right") - 1, 0, 9)
+    for index, lower in enumerate(edges[:-1]):
+        mask = assigned == index
         if mask.any():
             result.append(
                 {

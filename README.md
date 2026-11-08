@@ -92,7 +92,7 @@ not rewrite previously stored score snapshots.
 Scores retain feature/rule/model/formula versions, features, model probability,
 rule signals, rule baseline, applied adjustment and threshold. The initial formula
 is `min(100, round(100 × model_probability) + min(40, rule_score))`. The current
-threshold-cohort-selected review threshold is 45 in the v2 development artifact.
+threshold-cohort-selected review threshold is 45 in the v2 artifact.
 The risk index is not a fraud probability. The model probability now receives
 sigmoid calibration fitted on a separate chronological cohort.
 
@@ -116,12 +116,25 @@ to evaluate an existing frozen artifact. No bulk dataset is committed.
 The preserved v1 combined test result was **22.8% precision, 66.4% recall**, with 1,561 false
 alerts among 2,022 reviews on 6,000 synthetic events. It missed the validation
 recall objective of 80%. Original evidence is in [baseline-v1](docs/evaluation/baseline-v1/report.md)
-and its code is preserved at commit `c27b589`. The v2 development candidate is
-frozen; the fresh final evaluation is pending. All results remain synthetic.
+and its code is preserved at commit `c27b589`.
+
+The [fresh v2 final evaluation](docs/evaluation/report.md) compares both versions
+on the same 18,000 held-out events: v1 scored 23.4% precision / 81.0% recall, while
+v2 scores **79.6% precision / 76.7% recall**. False alerts fall from 4,827 to 357,
+at the cost of more missed fraud (345 to 424). V2 still misses the 80% recall
+objective. Its run-cluster bootstrap recall interval is approximately 73.1%–80.4%;
+these are synthetic-cohort uncertainty estimates, not real-world guarantees.
+
+Calibration reduces final Brier loss from 0.0541 to 0.0383 on the same new model
+(lower is better). See the report for scenario/profile failures, all threshold
+tradeoffs and model-only comparisons. Stronger category/channel results reflect
+simple generator assumptions; background fraud with no observable signal remains
+largely undetectable. All results remain synthetic.
 
 Artifacts contain data-only standardized coefficients or bounded trees rather than executable pickle.
 The API needs no scikit-learn/NumPy runtime dependency. Tests and training verify
 exported inference against scikit-learn and online/offline feature parity.
+Stored v1 score snapshots remain readable and idempotent after feature upgrades.
 Use `uv run --group training pytest` to include training-specific tests. Restart the
 API after retraining (`docker compose up -d --build api` for Compose).
 
