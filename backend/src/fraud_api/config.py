@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     cookie_secure: bool = True
     session_ttl_hours: int = Field(default=24, ge=1, le=168)
     max_transactions_per_session: int = Field(default=500, ge=1, le=10000)
+    model_directory: Path = Path(__file__).resolve().parent / "model_artifact"
 
     @model_validator(mode="after")
     def require_secure_production(self) -> "Settings":

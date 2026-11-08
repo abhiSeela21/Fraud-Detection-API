@@ -1,16 +1,34 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
+from fraud_api.artifacts import verified_artifact
 from fraud_api.config import get_settings
+from fraud_api.database import get_engine
 from fraud_api.errors import ApiError
 from fraud_api.sessions import router
 from fraud_api.simulation import router as simulation_router
 from fraud_api.transactions import router as transaction_router
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    try:
+        verified_artifact()
+    except ApiError:
+        pass  # Stay available for health diagnostics; scoring remains disabled.
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Fraud Detection API",
     version="0.1.0",
     description=(
@@ -59,7 +77,14 @@ async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
     )
 
 
-@app.get("/health", status_code=503, tags=["operations"])
-def health() -> dict[str, str]:
-    # Remain unready until database and verified model checks are implemented.
-    return {"status": "unavailable", "code": "SERVICE_INITIALIZING"}
+@app.get("/health", tags=["operations"])
+def health() -> JSONResponse:
+    try:
+        model = verified_artifact()
+        with get_engine().connect() as connection:
+            connection.execute(text("SELECT 1 FROM demo_sessions LIMIT 1"))
+            connection.execute(text("SELECT 1 FROM transactions LIMIT 1"))
+            connection.execute(text("SELECT 1 FROM alerts LIMIT 1"))
+    except (ApiError, SQLAlchemyError):
+        return JSONResponse(status_code=503, content={"status": "unavailable"})
+    return JSONResponse(content={"status": "ready", "model_version": model.model_version})

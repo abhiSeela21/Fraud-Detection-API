@@ -174,17 +174,33 @@ def test_persisted_scoring_retries_conflicts_isolation_and_feedback(client, db):
     assert client.get("/v1/transactions?cursor=garbage", headers=headers).status_code == 422
 
 
-def test_missing_model_does_not_persist_a_fake_score(client, db):
+def test_missing_model_does_not_persist_a_fake_score(client, db, monkeypatch):
     from uuid import uuid4
 
+    from fraud_api.errors import ApiError
     from fraud_api.models import ScoredTransaction
+
+    def unavailable():
+        raise ApiError(503, "MODEL_UNAVAILABLE", "Unavailable")
+
+    monkeypatch.setattr("fraud_api.scoring.verified_artifact", unavailable)
 
     token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
     headers = {"Authorization": f"Bearer {token}"}
     transaction = generate_transaction(SimulationConfig(run_id=uuid4()), 0).model_dump(mode="json")
     result = client.post("/v1/transactions/score", json=transaction, headers=headers)
     assert result.status_code == 503
-    assert db.scalar(select(ScoredTransaction)) is None
+    from uuid import UUID
+
+    assert (
+        db.scalar(
+            select(ScoredTransaction).where(
+                ScoredTransaction.client_transaction_id
+                == UUID(transaction["client_transaction_id"])
+            )
+        )
+        is None
+    )
 
 
 def test_session_limit_still_allows_idempotent_retry(client, monkeypatch):
@@ -204,3 +220,25 @@ def test_session_limit_still_allows_idempotent_retry(client, monkeypatch):
     )
     second = generate_transaction(config, 1).model_dump(mode="json")
     assert client.post("/v1/transactions/score", json=second, headers=headers).status_code == 429
+
+
+def test_real_model_online_offline_parity(client):
+    from uuid import uuid4
+
+    token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    config = SimulationConfig(run_id=uuid4())
+    history = []
+    for index in range(20):
+        transaction = generate_transaction(config, index)
+        response = client.post(
+            "/v1/transactions/score", json=transaction.model_dump(mode="json"), headers=headers
+        )
+        assert response.status_code == 200
+        online = response.json()
+        offline = Scorer().score(transaction, history, uuid4())
+        assert online["risk_score"] == offline.risk_score
+        assert online["model_probability"] == offline.model_probability
+        assert online["features"] == offline.features.model_dump()
+        assert online["recommendation"] == offline.recommendation
+        history.append(transaction)

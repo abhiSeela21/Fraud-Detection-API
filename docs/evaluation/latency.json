@@ -1,0 +1,31 @@
+{
+  "environment": {
+    "host": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "architecture": "arm64",
+    "logical_cpus": 8,
+    "python_client": "3.14.0",
+    "server": "Docker Compose API Python 3.12 + PostgreSQL 17; localhost HTTP"
+  },
+  "model_version": "logistic-v1-cdc4def66121",
+  "measurements": [
+    {
+      "concurrency": 1,
+      "requests": 99,
+      "p50_ms": 4.580624867230654,
+      "p95_ms": 11.817458784207702,
+      "p99_ms": 16.883667092770338,
+      "max_ms": 24.336416041478515,
+      "requests_per_second": 177.71133388705036
+    },
+    {
+      "concurrency": 4,
+      "requests": 99,
+      "p50_ms": 15.243458095937967,
+      "p95_ms": 31.13141586072743,
+      "p99_ms": 58.40733298100531,
+      "max_ms": 58.9696248061955,
+      "requests_per_second": 228.47162205264576
+    }
+  ],
+  "limitations": "Warm local HTTP latency including database persistence; each load uses one session, so writes serialize. Concurrent arrival can change available history. No Render/network/cold-start claim. Synthetic results only."
+}

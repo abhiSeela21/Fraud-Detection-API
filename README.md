@@ -10,11 +10,11 @@ Foundation in progress. Product decisions are recorded in [docs/design.md](docs/
 Anonymous browser/API sessions, the initial PostgreSQL migration, deterministic
 simulation batches, validated transaction contracts, historical features and rule
 signals are implemented.
-The current `/health` endpoint deliberately returns 503 until database and model
-readiness are implemented. Transaction/alert storage, idempotency, pagination and
-feedback are implemented and tested using an injected test model. The public
-scoring route deliberately returns `503 MODEL_UNAVAILABLE` until a verified trained
-artifact is available. The classifier and frontend are still in progress.
+Transaction/alert storage, idempotency, pagination and feedback are implemented.
+A trained scikit-learn logistic classifier now serves model-backed scoring. Startup
+verifies its bundled JSON artifact; `/health` reports readiness only when the
+verified model and migrated database are available. The frontend and remaining
+operational safeguards are still in progress; this is not ready for public release.
 
 ## Local backend development
 
@@ -64,12 +64,11 @@ Pass the token in `Authorization: Bearer <token>`. Profiles are `commuter`,
 background feed runs on the server. New runs use new UUIDs; the same seed/config
 recreates the event contents with new IDs.
 
-All profiles and behaviors are invented. The current generator is an initial
-baseline, not yet a finished training dataset. Historical features exclude
+All profiles and behaviors are invented. Historical features exclude
 same-time/future events and different accounts/runs. Physical travel uses earlier
 in-person activity only. Rule signals cover limited history, relative amount
 spikes, velocity, impossible travel and new categories/channels. Rule adjustments
-are provisional until model/threshold evaluation; they do not explain a classifier.
+are versioned and evaluated separately; they do not explain the classifier.
 
 ## Transaction and alert contract
 
@@ -92,8 +91,45 @@ not rewrite previously stored score snapshots.
 
 Scores retain feature/rule/model/formula versions, features, model probability,
 rule signals, rule baseline, applied adjustment and threshold. The initial formula
-is `min(100, round(100 × model_probability) + min(40, rule_score))`; threshold and
-model selection remain subject to reproducible validation in the next milestone.
+is `min(100, round(100 × model_probability) + min(40, rule_score))`. The current
+validation-selected review threshold is 42. This risk index is not a fraud
+probability; the class-weighted model output is also uncalibrated.
+
+## Train and evaluate
+
+From `backend/`:
+
+```sh
+uv sync --group training
+uv run --group training python training/train.py
+```
+
+This regenerates 18,000 training, 6,000 validation and 6,000 later test transactions,
+compares six logistic classifier configurations, chooses validation thresholds,
+exports a small JSON model plus checksum manifest, and rebuilds the
+[evaluation report](docs/evaluation/report.md) and machine-readable results. No bulk
+dataset is committed. Seeds, prevalence assumptions and calendar partitions are
+recorded in `backend/training/config.json`. Test data never selects parameters.
+
+The first combined test result is **22.8% precision, 66.4% recall**, with 1,561 false
+alerts among 2,022 reviews on 6,000 synthetic events. It misses the validation
+recall objective of 80%, and the hybrid adds little over model-only. These are
+documented limitations, not evidence of real-world detection quality. Class
+weighting also worsens calibration; see the report's Brier-loss comparison.
+
+The artifact contains standardized coefficients rather than an executable pickle.
+The API needs no scikit-learn/NumPy runtime dependency. Tests and training verify
+exported inference against scikit-learn and online/offline feature parity.
+Use `uv run --group training pytest` to include training-specific tests. Restart the
+API after retraining (`docker compose up -d --build api` for Compose).
+
+With the API running, `uv run python training/benchmark.py` records a small local
+HTTP load with database persistence at concurrency 1 and 4. See
+[latency evidence](docs/evaluation/latency.md); hosted cold starts are not measured.
+
+To try scoring, create an API session using `/docs`, authorize with its bearer
+token, request a simulation batch, then submit a returned transaction to
+`/v1/transactions/score`. Inspect `/v1/alerts` and apply a feedback label.
 
 Hosting must cost $0 with no payment method. Free-plan verification and deployment
 will follow the local release gates. No hosted resources have been provisioned.

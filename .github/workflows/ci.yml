@@ -28,10 +28,11 @@ jobs:
         with:
           version: "0.9.8"
           python-version: "3.12"
-      - run: uv sync --frozen
+      - run: uv sync --frozen --group training
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src
       - run: uv run alembic upgrade head
-      - run: uv run pytest
+      - run: uv run --group training pytest
+      - run: uv run --group training python training/train.py
       - run: docker build -t fraud-api .

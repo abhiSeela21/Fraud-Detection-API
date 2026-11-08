@@ -4,12 +4,12 @@ from uuid import UUID
 
 from pydantic import Field
 
+from fraud_api.artifacts import verified_artifact
 from fraud_api.contracts import Contract, Transaction
-from fraud_api.errors import ApiError
 from fraud_api.features import FEATURE_VERSION, Features, calculate_features
+from fraud_api.formula import SCORING_VERSION, combined_score
+from fraud_api.model_inputs import model_inputs
 from fraud_api.rules import RULE_VERSION, RuleSignal, rule_signals, rules_score
-
-SCORING_VERSION = "combined-v1"
 
 
 class Prediction(Contract):
@@ -38,8 +38,12 @@ class ScoreResult(Contract):
 
 class Scorer:
     def predict(self, transaction: Transaction, features: Features) -> Prediction:
-        # Replaced by the verified artifact loader in the model milestone.
-        raise ApiError(503, "MODEL_UNAVAILABLE", "A verified scoring model is not available")
+        artifact = verified_artifact()
+        return Prediction(
+            probability=artifact.probability(model_inputs(transaction, features)),
+            review_threshold=artifact.review_threshold,
+            model_version=artifact.model_version,
+        )
 
     def score(
         self, transaction: Transaction, history: Iterable[Transaction], transaction_id: UUID
@@ -49,7 +53,7 @@ class Scorer:
         signals = rule_signals(features)
         baseline = rules_score(signals)
         adjustment = min(40, baseline)
-        score = min(100, round(prediction.probability * 100) + adjustment)
+        score = combined_score(prediction.probability, baseline)
         return ScoreResult(
             transaction_id=transaction_id,
             client_transaction_id=transaction.client_transaction_id,

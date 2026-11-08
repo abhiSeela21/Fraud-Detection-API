@@ -6,10 +6,16 @@ from fraud_api.config import Settings
 from fraud_api.main import app
 
 
-def test_unfinished_service_does_not_claim_readiness() -> None:
+def test_missing_model_does_not_claim_readiness(monkeypatch) -> None:
+    from fraud_api.errors import ApiError
+
+    def unavailable():
+        raise ApiError(503, "MODEL_UNAVAILABLE", "Unavailable")
+
+    monkeypatch.setattr("fraud_api.main.verified_artifact", unavailable)
     response = TestClient(app).get("/health")
     assert response.status_code == 503
-    assert response.json()["code"] == "SERVICE_INITIALIZING"
+    assert response.json()["status"] == "unavailable"
 
 
 def test_production_rejects_insecure_cookies() -> None:
