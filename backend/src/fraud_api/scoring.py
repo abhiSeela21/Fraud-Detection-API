@@ -18,6 +18,18 @@ class Prediction(Contract):
     model_version: str
 
 
+class StoredFeaturesV1(Contract):
+    """Historical snapshot schema; old scores stay readable after feature upgrades."""
+
+    history_count: int
+    amount_ratio: float
+    transactions_last_5m: int
+    distance_from_previous_km: float
+    travel_speed_kmh: float
+    unusual_category: bool
+    unusual_channel: bool
+
+
 class ScoreResult(Contract):
     transaction_id: UUID
     client_transaction_id: UUID
@@ -28,7 +40,7 @@ class ScoreResult(Contract):
     rule_adjustment: int
     model_probability: float
     review_threshold: int
-    features: Features
+    features: Features | StoredFeaturesV1
     model_version: str
     feature_version: str = FEATURE_VERSION
     rule_version: str = RULE_VERSION

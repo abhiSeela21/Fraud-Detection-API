@@ -242,3 +242,32 @@ def test_real_model_online_offline_parity(client):
         assert online["features"] == offline.features.model_dump()
         assert online["recommendation"] == offline.recommendation
         history.append(transaction)
+
+
+def test_v1_score_snapshots_remain_readable_and_idempotent_after_feature_upgrade(client, db):
+    from uuid import UUID, uuid4
+
+    from fraud_api.models import ScoredTransaction
+    from fraud_api.scoring import StoredFeaturesV1
+
+    token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    transaction = generate_transaction(SimulationConfig(run_id=uuid4()), 0).model_dump(mode="json")
+    original = client.post("/v1/transactions/score", json=transaction, headers=headers).json()
+    legacy = {
+        **original,
+        "feature_version": "features-v1",
+        "model_version": "historical-v1",
+        "features": {
+            key: value
+            for key, value in original["features"].items()
+            if key in StoredFeaturesV1.model_fields
+        },
+    }
+    row = db.scalar(
+        select(ScoredTransaction).where(ScoredTransaction.id == UUID(original["transaction_id"]))
+    )
+    row.result = legacy
+    db.commit()
+    assert client.get("/v1/transactions", headers=headers).json()["items"][0]["score"] == legacy
+    assert client.post("/v1/transactions/score", json=transaction, headers=headers).json() == legacy
