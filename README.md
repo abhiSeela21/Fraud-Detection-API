@@ -11,8 +11,10 @@ Anonymous browser/API sessions, the initial PostgreSQL migration, deterministic
 simulation batches, validated transaction contracts, historical features and rule
 signals are implemented.
 The current `/health` endpoint deliberately returns 503 until database and model
-readiness are implemented. Persisted scoring, the classifier, alerts and the frontend
-are still in progress.
+readiness are implemented. Transaction/alert storage, idempotency, pagination and
+feedback are implemented and tested using an injected test model. The public
+scoring route deliberately returns `503 MODEL_UNAVAILABLE` until a verified trained
+artifact is available. The classifier and frontend are still in progress.
 
 ## Local backend development
 
@@ -68,6 +70,30 @@ same-time/future events and different accounts/runs. Physical travel uses earlie
 in-person activity only. Rule signals cover limited history, relative amount
 spikes, velocity, impossible travel and new categories/channels. Rule adjustments
 are provisional until model/threshold evaluation; they do not explain a classifier.
+
+## Transaction and alert contract
+
+- `POST /v1/transactions/score`: accepts the transaction shape returned by simulation.
+  Identical session-scoped client IDs and payloads return the original immutable
+  result; changed payloads return 409. Each session is limited to 500 transactions
+  by default. Retries remain available after the cap is reached.
+- `GET /v1/transactions` and `GET /v1/alerts`: newest-ingested first, with `limit`
+  (1–100) and opaque `cursor`. Filters: `recommendation`, `min_score`, `max_score`,
+  `account_id`, `run_id`, `feedback` (`fraud`, `legitimate`, `unlabeled`),
+  `start_time`, and `end_time`. Time filters use transaction event time.
+- `PATCH /v1/alerts/{alert_id}/feedback`: accepts `{"label":"fraud"}` or
+  `{"label":"legitimate"}`. Feedback can change; the original score never changes.
+
+All routes require the session cookie or bearer token. Alert IDs belonging to
+another session return 404. Scoring serializes writes per session so concurrent
+requests cannot create duplicate alerts or race the durable transaction cap.
+Historical events are strictly earlier by event time; inserting an old event does
+not rewrite previously stored score snapshots.
+
+Scores retain feature/rule/model/formula versions, features, model probability,
+rule signals, rule baseline, applied adjustment and threshold. The initial formula
+is `min(100, round(100 × model_probability) + min(40, rule_score))`; threshold and
+model selection remain subject to reproducible validation in the next milestone.
 
 Hosting must cost $0 with no payment method. Free-plan verification and deployment
 will follow the local release gates. No hosted resources have been provisioned.

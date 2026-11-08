@@ -12,7 +12,9 @@ from fraud_api.config import get_settings
 from fraud_api.database import get_db
 from fraud_api.main import app
 from fraud_api.models import DemoSession
+from fraud_api.scoring import Prediction, Scorer, get_scorer
 from fraud_api.sessions import hash_token, require_session
+from fraud_api.simulation import SimulationConfig, generate_transaction
 
 
 @pytest.fixture
@@ -111,3 +113,94 @@ def test_simulation_requires_session_and_is_repeatable(client):
     invalid = client.post("/v1/simulations/batch", json={**payload, "count": 100}, headers=headers)
     assert invalid.status_code == 422
     assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+class TestScorer(Scorer):
+    __test__ = False
+
+    def predict(self, transaction, features):
+        return Prediction(probability=0.7, review_threshold=60, model_version="test-only")
+
+
+def test_persisted_scoring_retries_conflicts_isolation_and_feedback(client, db):
+    from uuid import uuid4
+
+    app.dependency_overrides[get_scorer] = TestScorer
+    token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    other_token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
+    other = {"Authorization": f"Bearer {other_token}"}
+    config = SimulationConfig(run_id=uuid4())
+    transaction = generate_transaction(config, 0).model_dump(mode="json")
+    first = client.post("/v1/transactions/score", json=transaction, headers=headers)
+    assert first.status_code == 200
+    result = first.json()
+    assert result["recommendation"] == "review"
+    assert result["model_probability"] == 0.7
+    assert result["alert_id"]
+    retry = client.post("/v1/transactions/score", json=transaction, headers=headers)
+    assert retry.json() == result
+    conflict = client.post(
+        "/v1/transactions/score", json={**transaction, "amount": "12.34"}, headers=headers
+    )
+    assert conflict.status_code == 409
+    assert len(client.get("/v1/alerts", headers=headers).json()["items"]) == 1
+    assert client.get("/v1/alerts", headers=other).json()["items"] == []
+    feedback_url = f"/v1/alerts/{result['alert_id']}/feedback"
+    assert client.patch(feedback_url, json={"label": "fraud"}, headers=other).status_code == 404
+    assert client.patch(feedback_url, json={"label": "fraud"}, headers=headers).status_code == 200
+    assert (
+        client.get("/v1/alerts?feedback=fraud", headers=headers).json()["items"][0]["feedback"]
+        == "fraud"
+    )
+    assert (
+        client.patch(feedback_url, json={"label": "legitimate"}, headers=headers).status_code == 200
+    )
+    assert client.get("/v1/alerts?feedback=fraud", headers=headers).json()["items"] == []
+    assert client.post("/v1/transactions/score", json=transaction, headers=headers).json() == result
+    # Out-of-order arrival must not leak future history.
+    future = generate_transaction(config, 20).model_dump(mode="json")
+    client.post("/v1/transactions/score", json=future, headers=headers)
+    earlier = generate_transaction(config, 1).model_dump(mode="json")
+    early_result = client.post("/v1/transactions/score", json=earlier, headers=headers).json()
+    assert early_result["features"]["history_count"] == 1
+    page = client.get("/v1/transactions?limit=2", headers=headers).json()
+    assert len(page["items"]) == 2 and page["next_cursor"]
+    next_page = client.get(
+        f"/v1/transactions?limit=2&cursor={page['next_cursor']}", headers=headers
+    ).json()
+    assert len(next_page["items"]) == 1
+    assert next_page["items"][0]["score"]["transaction_id"] == result["transaction_id"]
+    assert client.get("/v1/transactions?cursor=garbage", headers=headers).status_code == 422
+
+
+def test_missing_model_does_not_persist_a_fake_score(client, db):
+    from uuid import uuid4
+
+    from fraud_api.models import ScoredTransaction
+
+    token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    transaction = generate_transaction(SimulationConfig(run_id=uuid4()), 0).model_dump(mode="json")
+    result = client.post("/v1/transactions/score", json=transaction, headers=headers)
+    assert result.status_code == 503
+    assert db.scalar(select(ScoredTransaction)) is None
+
+
+def test_session_limit_still_allows_idempotent_retry(client, monkeypatch):
+    from uuid import uuid4
+
+    monkeypatch.setattr(get_settings(), "max_transactions_per_session", 1)
+    app.dependency_overrides[get_scorer] = TestScorer
+    token = client.post("/v1/sessions", json={"mode": "api"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    config = SimulationConfig(run_id=uuid4())
+    transaction = generate_transaction(config, 0).model_dump(mode="json")
+    assert (
+        client.post("/v1/transactions/score", json=transaction, headers=headers).status_code == 200
+    )
+    assert (
+        client.post("/v1/transactions/score", json=transaction, headers=headers).status_code == 200
+    )
+    second = generate_transaction(config, 1).model_dump(mode="json")
+    assert client.post("/v1/transactions/score", json=second, headers=headers).status_code == 429

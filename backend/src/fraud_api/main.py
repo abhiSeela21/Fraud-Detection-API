@@ -8,6 +8,7 @@ from fraud_api.config import get_settings
 from fraud_api.errors import ApiError
 from fraud_api.sessions import router
 from fraud_api.simulation import router as simulation_router
+from fraud_api.transactions import router as transaction_router
 
 app = FastAPI(
     title="Fraud Detection API",
@@ -27,6 +28,7 @@ app.add_middleware(
 )
 app.include_router(router)
 app.include_router(simulation_router)
+app.include_router(transaction_router)
 
 
 @app.exception_handler(RequestValidationError)
