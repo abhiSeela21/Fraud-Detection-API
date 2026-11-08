@@ -1,0 +1,50 @@
+{
+  "coefficients": [
+    0.45564528276661165,
+    0.2800153000838878,
+    0.32041527615327736,
+    0.758790631934669,
+    -0.940036934226535,
+    1.0396740681316132,
+    -0.031500185064509675,
+    0.10467643145428811
+  ],
+  "feature_version": "features-v1",
+  "format": "standardized-logistic-v1",
+  "input_names": [
+    "log_amount",
+    "log_amount_ratio",
+    "log_history_count",
+    "transactions_last_5m",
+    "log_distance_km",
+    "log_travel_speed_kmh",
+    "unusual_category",
+    "unusual_channel"
+  ],
+  "input_version": "model-inputs-v1",
+  "intercept": -0.44561578314383293,
+  "means": [
+    4.881887605244106,
+    0.6326477035470889,
+    4.31615993596208,
+    0.08233333333333333,
+    0.8284138178605519,
+    0.7836242174300387,
+    0.0044444444444444444,
+    0.00044444444444444447
+  ],
+  "model_version": "logistic-v1-cdc4def66121",
+  "review_threshold": 42,
+  "rule_version": "rules-v1",
+  "scales": [
+    1.3496478341494227,
+    0.3911799648585678,
+    0.952085238876248,
+    0.4305024196603225,
+    2.5063850941502994,
+    2.6629064087328547,
+    0.06651835354264876,
+    0.021077165691348876
+  ],
+  "scoring_version": "combined-v1"
+}
