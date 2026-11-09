@@ -39,3 +39,55 @@ jobs:
       - run: uv run --group training python training/tune_recall.py
       - run: jq -e '.promotion_passed' ../docs/evaluation/recall-policy/results.json
       - run: docker build -t fraud-api .
+  frontend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: fraud
+          POSTGRES_PASSWORD: ci_test_only
+          POSTGRES_DB: fraud_frontend_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fraud -d fraud_frontend_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      FRAUD_DATABASE_URL: postgresql+psycopg://fraud:ci_test_only@localhost:5432/fraud_frontend_test
+      FRAUD_COOKIE_SECURE: "false"
+      FRAUD_FRONTEND_ORIGIN: http://localhost:5173
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.8"
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: uv sync --frozen
+        working-directory: backend
+      - run: uv run alembic upgrade head
+        working-directory: backend
+      - run: uv run python scripts/export_openapi.py --check
+        working-directory: backend
+      - run: npm ci --no-audit --no-fund
+      - run: npm run api:generate
+      - run: git diff --exit-code -- src/api/schema.d.ts
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: docker build -t fraud-demo .
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: frontend-browser-failures
+          path: frontend/test-results/
+          retention-days: 7

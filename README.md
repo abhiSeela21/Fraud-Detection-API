@@ -1,12 +1,12 @@
 # Fraud Detection API
 
 A portfolio API for scoring **synthetic** payment transactions, with an interactive
-demo planned as an independent React client. Detection combines explicit
+React demo as an independent client. Detection combines explicit
 rules and a lightweight classifier. This project never processes real payments.
 
 ## Status
 
-Foundation in progress. Product decisions are recorded in [docs/design.md](docs/design.md).
+Local API and interactive demo implemented. Product decisions are recorded in [docs/design.md](docs/design.md).
 Anonymous browser/API sessions, the initial PostgreSQL migration, deterministic
 simulation batches, validated transaction contracts, historical features and rule
 signals are implemented.
@@ -15,8 +15,24 @@ A trained scikit-learn logistic classifier serves model-backed scoring. Startup
 verifies its bundled JSON artifact; `/health` reports readiness only when the
 verified model and migrated database are available. Request limits, expiry cleanup,
 safe request logging and consistent API errors are implemented and tested against
-PostgreSQL, including concurrent retry/cap checks. The frontend and public-release
-verification are still in progress; this is not ready for public release.
+PostgreSQL, including concurrent retry/cap checks. The React demo includes a guided
+review, configurable simulations, manual scoring, alert investigation and feedback.
+Public deployment verification remains outstanding; nothing is publicly hosted yet.
+
+## Try the local demo
+
+After configuring the env files below:
+
+```sh
+docker compose up -d --build
+docker compose exec api alembic upgrade head
+```
+
+Open **http://localhost:5173** and choose **Start guided demo**. Inspect a review
+alert, then label it fraud or legitimate. You can then change the profile,
+scenario, seed, event count and playback speed for your own simulations.
+See [frontend setup and design](docs/frontend.md) for Vite development, browser
+tests, the generated API contract and implementation boundaries.
 
 ## Local backend development
 
@@ -33,8 +49,7 @@ Copy `.env.example` to `.env` at the repository root and in `backend/`, replacin
 placeholder credentials locally. Never commit real env files. For Compose, set
 the backend database host to `db` and match its password to the root env file.
 Use URL-encoded credentials in database URLs. Start with `docker compose up --build`.
-Docker is required for the PostgreSQL workflow; the frontend service will be added
-when its implementation is ready.
+Docker provides PostgreSQL, the API, and the frontend's static build/API proxy.
 
 The database binds to localhost port 5433 by default (`POSTGRES_PORT` overrides it).
 Apply migrations with `docker compose exec api alembic upgrade head`.
