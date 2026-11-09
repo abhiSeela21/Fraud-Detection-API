@@ -85,6 +85,25 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: docker build -t fraud-demo .
+      - run: docker build -t fraud-hosted ..
+      - name: Start packaged same-origin demo
+        run: >-
+          docker run -d --network host --name fraud-hosted
+          -e FRAUD_ENVIRONMENT=test -e FRAUD_COOKIE_SECURE=false
+          -e FRAUD_FRONTEND_ORIGIN=http://localhost:5180
+          -e FRAUD_DATABASE_URL
+          --entrypoint uvicorn fraud-hosted fraud_api.deployment:create_app
+          --factory --host 0.0.0.0 --port 5180
+          --no-proxy-headers --no-access-log --log-config logging.json
+      - name: Wait for packaged readiness
+        run: timeout 60 bash -c 'until curl -fsS http://localhost:5180/api/health; do sleep 1; done'
+      - name: Test packaged same-origin demo
+        run: npm run test:e2e
+        env:
+          DEMO_BASE_URL: http://localhost:5180
+      - name: Stop packaged demo
+        if: always()
+        run: docker rm -f fraud-hosted || true
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

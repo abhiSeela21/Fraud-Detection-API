@@ -39,7 +39,8 @@ Frontend `.env.example` contains only the public API base URL. `VITE_` values ar
 bundled into browser code and must never contain credentials. To run Vite against
 a different local API, set server-only `API_PROXY_TARGET`; for a separately hosted
 browser API, set public `VITE_API_BASE_URL` and verify same-site cookies/origins
-before deployment. No hosting resources are provisioned by this change.
+before deployment. The [free deployment guide](deployment.md) describes the
+single-origin hosted image; no hosting resources have been provisioned yet.
 
 ## Behavioral guarantees and limits
 

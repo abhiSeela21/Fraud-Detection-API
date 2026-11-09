@@ -1,0 +1,25 @@
+# One free service. PostgreSQL is provisioned separately on Neon Free.
+previews:
+  generation: "off"
+services:
+  - type: web
+    name: fraud-detection-demo
+    runtime: docker
+    plan: free
+    region: ohio
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: FRAUD_ENVIRONMENT
+        value: production
+      - key: FRAUD_COOKIE_SECURE
+        value: "true"
+      - key: FRAUD_FRONTEND_ORIGIN
+        fromService:
+          type: web
+          name: fraud-detection-demo
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: FRAUD_DATABASE_URL
+        sync: false

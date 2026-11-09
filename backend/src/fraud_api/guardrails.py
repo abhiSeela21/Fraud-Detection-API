@@ -126,7 +126,11 @@ class GuardrailsMiddleware:
             await send(message)
 
         try:
-            if scope["path"].startswith("/v1/") and scope["method"] != "OPTIONS":
+            path = scope["path"]
+            root = scope.get("root_path", "")
+            if root and (path == root or path.startswith(root + "/")):
+                path = path[len(root) :]
+            if path.startswith("/v1/") and scope["method"] != "OPTIONS":
                 settings = get_settings()
                 headers = Headers(scope=scope)
                 peer = scope.get("client")
@@ -137,7 +141,7 @@ class GuardrailsMiddleware:
                 )
                 ip_hash = hashlib.sha256(identity.encode()).hexdigest()
                 budgets = [(f"ip:{ip_hash}", settings.requests_per_minute_ip)]
-                if scope["path"] == "/v1/sessions":
+                if path == "/v1/sessions":
                     budgets.append((f"session:{ip_hash}", settings.sessions_per_minute_ip))
                 token = token_identity(headers)
                 if token:

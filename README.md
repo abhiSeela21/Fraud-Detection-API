@@ -196,4 +196,7 @@ token, request a simulation batch, then submit a returned transaction to
 `/v1/transactions/score`. Inspect `/v1/alerts` and apply a feedback label.
 
 Hosting must cost $0 with no payment method. Free-plan verification and deployment
-will follow the local release gates. No hosted resources have been provisioned.
+instructions are in [the deployment guide](docs/deployment.md). A root Dockerfile
+and `render.yaml` package the demo and API under one origin for Render Free with
+Neon Free PostgreSQL. Public provisioning/verification follows a pushed, green
+commit; no hosted resources have been provisioned yet.

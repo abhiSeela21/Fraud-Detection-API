@@ -51,7 +51,7 @@ test('desktop: guided review, feedback, filters, persistence and API docs', asyn
   const docs = await context.newPage();
   await docs.goto('/api/docs');
   await expect(docs.getByText('Fraud Detection API', { exact: false }).first()).toBeVisible();
-  await expect.poll(async () => (await docs.request.get('/openapi.json')).status()).toBe(200);
+  await expect.poll(async () => (await docs.request.get('/api/openapi.json')).status()).toBe(200);
   await docs.close();
 });
 

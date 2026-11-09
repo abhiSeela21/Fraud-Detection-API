@@ -37,8 +37,20 @@ app = FastAPI(
     title="Fraud Detection API",
     version="0.1.0",
     responses={
-        status: {"model": ErrorEnvelope}
-        for status in [400, 401, 403, 404, 405, 409, 413, 422, 429, 500, 503]
+        status: {"model": ErrorEnvelope, "description": description}
+        for status, description in {
+            400: "Bad Request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            404: "Not Found",
+            405: "Method Not Allowed",
+            409: "Conflict",
+            413: "Content Too Large",
+            422: "Unprocessable Content",
+            429: "Too Many Requests",
+            500: "Internal Server Error",
+            503: "Service Unavailable",
+        }.items()
     },
     description=(
         "Score synthetic transactions using rules and a lightweight classifier. "
