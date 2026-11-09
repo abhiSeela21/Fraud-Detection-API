@@ -6,25 +6,25 @@
     "python_client": "3.14.0",
     "server": "Docker Compose API Python 3.12 + PostgreSQL 17; localhost HTTP"
   },
-  "model_version": "model-v2-3e3ceea77cf2",
+  "model_version": "model-v2-recall-50d731a331ac",
   "measurements": [
     {
       "concurrency": 1,
       "requests": 99,
-      "p50_ms": 4.325707908719778,
-      "p95_ms": 8.836624911054969,
-      "p99_ms": 26.217958191409707,
-      "max_ms": 33.038915833458304,
-      "requests_per_second": 190.17717268685442
+      "p50_ms": 4.998042015358806,
+      "p95_ms": 11.283958097919822,
+      "p99_ms": 17.643666127696633,
+      "max_ms": 26.25120780430734,
+      "requests_per_second": 173.51782123128368
     },
     {
       "concurrency": 4,
       "requests": 99,
-      "p50_ms": 14.78583412244916,
-      "p95_ms": 21.50799985975027,
-      "p99_ms": 34.61004188284278,
-      "max_ms": 36.0467080026865,
-      "requests_per_second": 269.6136561028458
+      "p50_ms": 16.360624926164746,
+      "p95_ms": 29.492124915122986,
+      "p99_ms": 100.77783302403986,
+      "max_ms": 101.49958310648799,
+      "requests_per_second": 203.78075040048623
     }
   ],
   "limitations": "Warm local HTTP latency including database persistence; each load uses one session, so writes serialize. Concurrent arrival can change available history. No Render/network/cold-start claim. Synthetic results only."

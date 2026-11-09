@@ -6,8 +6,9 @@ RUN uv sync --frozen --no-dev
 COPY src ./src
 COPY alembic.ini ./
 COPY migrations ./migrations
+COPY logging.json ./
 ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src"
 RUN useradd --create-home app
 USER app
 EXPOSE 8000
-CMD ["uvicorn", "fraud_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "fraud_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-proxy-headers", "--no-access-log", "--log-config", "logging.json"]

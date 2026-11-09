@@ -1,7 +1,7 @@
 # Fraud Detection API
 
 A portfolio API for scoring **synthetic** payment transactions, with an interactive
-demo planned as an independent React client. Detection results will combine explicit
+demo planned as an independent React client. Detection combines explicit
 rules and a lightweight classifier. This project never processes real payments.
 
 ## Status
@@ -13,13 +13,20 @@ signals are implemented.
 Transaction/alert storage, idempotency, pagination and feedback are implemented.
 A trained scikit-learn logistic classifier serves model-backed scoring. Startup
 verifies its bundled JSON artifact; `/health` reports readiness only when the
-verified model and migrated database are available. The frontend and remaining
-operational safeguards are still in progress; this is not ready for public release.
+verified model and migrated database are available. Request limits, expiry cleanup,
+safe request logging and consistent API errors are implemented and tested against
+PostgreSQL, including concurrent retry/cap checks. The frontend and public-release
+verification are still in progress; this is not ready for public release.
 
 ## Local backend development
 
 Install Python 3.12+ and uv. From `backend/`, run `uv sync` to create `.venv` with
-locked dependencies, then `uv run uvicorn fraud_api.main:app --app-dir src --reload`.
+locked dependencies, then run:
+
+```sh
+uv run uvicorn fraud_api.main:app --app-dir src --reload --no-proxy-headers --no-access-log --log-config logging.json
+```
+
 Interactive documentation is at http://localhost:8000/docs.
 
 Copy `.env.example` to `.env` at the repository root and in `backend/`, replacing
@@ -41,6 +48,12 @@ uses the env file's credentials and localhost:5433). CI uses a separate test dat
 
 From `backend/`, verify with `uv run pytest`, `uv run ruff check .`,
 `uv run ruff format --check .`, and `uv run mypy src`.
+
+For a complete API example against the running local containers, run
+`uv run python examples/demo.py` from `backend/`. It creates a temporary session,
+scores 20 synthetic events, verifies a retry, inspects alerts and saves simulated
+feedback without printing or saving its token. See [API operations](docs/api-operations.md)
+for limits, cleanup, logging, proxy settings and error handling.
 
 ## Synthetic simulations
 

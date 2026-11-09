@@ -1,18 +1,22 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Literal
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException
 
 from fraud_api.artifacts import verified_artifact
 from fraud_api.config import get_settings
 from fraud_api.database import get_engine
-from fraud_api.errors import ApiError
+from fraud_api.errors import ApiError, ErrorEnvelope
+from fraud_api.guardrails import GuardrailsMiddleware, limiter
 from fraud_api.sessions import router
 from fraud_api.simulation import router as simulation_router
 from fraud_api.transactions import router as transaction_router
@@ -20,6 +24,7 @@ from fraud_api.transactions import router as transaction_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    limiter.clear()
     try:
         verified_artifact()
     except ApiError:
@@ -31,18 +36,24 @@ app = FastAPI(
     lifespan=lifespan,
     title="Fraud Detection API",
     version="0.1.0",
+    responses={
+        status: {"model": ErrorEnvelope}
+        for status in [400, 401, 403, 404, 405, 409, 413, 422, 429, 500, 503]
+    },
     description=(
         "Score synthetic transactions using rules and a lightweight classifier. "
         "This demo does not process real payments. Service implementation is in progress."
     ),
 )
 
+app.add_middleware(GuardrailsMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[get_settings().frontend_origin],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH"],
     allow_headers=["Authorization", "Content-Type"],
+    expose_headers=["X-Request-ID", "Retry-After"],
 )
 app.include_router(router)
 app.include_router(simulation_router)
@@ -77,7 +88,17 @@ async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
     )
 
 
-@app.get("/health", tags=["operations"])
+class HealthResponse(BaseModel):
+    status: Literal["ready", "unavailable"]
+    model_version: str | None = None
+
+
+@app.get(
+    "/health",
+    tags=["operations"],
+    response_model=HealthResponse,
+    responses={503: {"model": HealthResponse}},
+)
 def health() -> JSONResponse:
     try:
         model = verified_artifact()
@@ -88,3 +109,27 @@ def health() -> JSONResponse:
     except (ApiError, SQLAlchemyError):
         return JSONResponse(status_code=503, content={"status": "unavailable"})
     return JSONResponse(content={"status": "ready", "model_version": model.model_version})
+
+
+@app.exception_handler(HTTPException)
+async def http_error_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    code = {404: "NOT_FOUND", 405: "METHOD_NOT_ALLOWED"}.get(exc.status_code, "HTTP_ERROR")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": {"code": code, "message": "Request is not supported"}},
+        headers=exc.headers,
+    )
+
+
+@app.exception_handler(SQLAlchemyError)
+async def database_error_handler(request: Request, exc: SQLAlchemyError) -> JSONResponse:
+    return JSONResponse(
+        status_code=503,
+        content={
+            "error": {
+                "code": "DATABASE_UNAVAILABLE",
+                "message": "Database is temporarily unavailable",
+            }
+        },
+        headers={"Retry-After": "5"},
+    )
