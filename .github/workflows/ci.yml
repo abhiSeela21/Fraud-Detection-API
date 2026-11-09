@@ -35,4 +35,7 @@ jobs:
       - run: uv run alembic upgrade head
       - run: uv run --group training pytest
       - run: uv run --group training python training/train.py
+      - run: uv run --group training python training/tune_recall.py --select-only
+      - run: uv run --group training python training/tune_recall.py
+      - run: jq -e '.promotion_passed' ../docs/evaluation/recall-policy/results.json
       - run: docker build -t fraud-api .

@@ -1,0 +1,12 @@
+{
+  "policy_version": "recall-policy-v1",
+  "development_recall_target": 0.82,
+  "development_runs": 300,
+  "development_recall_lower_bound": 0.80,
+  "maximum_precision_loss": 0.02,
+  "minimum_audit_precision": 0.75,
+  "bootstrap_repetitions": 1000,
+  "bootstrap_seed": 20261109,
+  "recall_audit_runs": 150,
+  "recall_audit_start": "2029-01-01T00:00:00+00:00"
+}

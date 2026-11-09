@@ -92,7 +92,7 @@ not rewrite previously stored score snapshots.
 Scores retain feature/rule/model/formula versions, features, model probability,
 rule signals, rule baseline, applied adjustment and threshold. The initial formula
 is `min(100, round(100 × model_probability) + min(40, rule_score))`. The current
-threshold-cohort-selected review threshold is 45 in the v2 artifact.
+development-selected review threshold is now 38 after a separate recall-policy audit.
 The risk index is not a fraud probability. The model probability now receives
 sigmoid calibration fitted on a separate chronological cohort.
 
@@ -130,6 +130,27 @@ Calibration reduces final Brier loss from 0.0541 to 0.0383 on the same new model
 tradeoffs and model-only comparisons. Stronger category/channel results reflect
 simple generator assumptions; background fraud with no observable signal remains
 largely undetectable. All results remain synthetic.
+
+The subsequent [recall-policy audit](docs/evaluation/recall-policy/report.md) keeps
+the weights and calibration fixed. Development selected threshold **38** using an
+expanded 2027 cohort and a bootstrap recall safety margin before opening a new
+2029 cohort. On that fresh **30,000-event** audit, recall increases from **79.8% to
+81.8%** while precision decreases from **79.8% to 79.4%**: 74 extra fraud labels
+found and 37 extra false alerts. Threshold 38 passed the predefined promotion gate.
+Its approximate 95% run-cluster recall interval is **78.8%–84.4%**; this is a point
+target achieved on synthetic data, not a guarantee of future or real-world recall.
+
+Reproduce the promoted policy after training with:
+
+```sh
+uv run --group training python training/tune_recall.py --select-only
+uv run --group training python training/tune_recall.py
+```
+
+The failed initial stricter policy and the successful development decision are
+preserved with source/model hashes. The 2028 threshold table did not select the
+new default. Retraining with `training/train.py` alone restores threshold 45; run
+the policy commands above afterward. Rebuild/restart the API to load the new policy.
 
 Artifacts contain data-only standardized coefficients or bounded trees rather than executable pickle.
 The API needs no scikit-learn/NumPy runtime dependency. Tests and training verify

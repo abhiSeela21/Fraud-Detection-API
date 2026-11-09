@@ -1,0 +1,77 @@
+{
+  "baseline": {
+    "alert_rate": 0.12343333333333334,
+    "alert_volume": 3703,
+    "false_alerts": 749,
+    "missed_fraud": 748,
+    "precision": 0.7977315689981096,
+    "recall": 0.797947055645597,
+    "threshold": 45,
+    "true_alerts": 2954
+  },
+  "candidate": {
+    "alert_rate": 0.12713333333333332,
+    "alert_volume": 3814,
+    "false_alerts": 786,
+    "missed_fraud": 674,
+    "precision": 0.7939171473518616,
+    "recall": 0.8179362506753106,
+    "threshold": 38,
+    "true_alerts": 3028
+  },
+  "cohort": {
+    "count": 30000,
+    "end": "2029-02-09T08:00:00+00:00",
+    "fraud": 3702,
+    "prevalence": 0.1234,
+    "runs": 150,
+    "sha256": "9a5dfbb3be21ee8d28a0dd1cb9fbc8beff37bb7ab5cbde05ffef003e9c3882c6",
+    "start": "2029-01-01T00:00:00+00:00"
+  },
+  "frozen_decision_sha256": "50d731a331ac84075e2db4fef93db92d063d705c42496582accf31c1e7cdcd03",
+  "intervals": {
+    "baseline": {
+      "alert_rate": [
+        0.09733249999999999,
+        0.14960833333333334
+      ],
+      "precision": [
+        0.7826908110322228,
+        0.8131924868781961
+      ],
+      "recall": [
+        0.766322519122514,
+        0.8266118951895003
+      ]
+    },
+    "candidate": {
+      "alert_rate": [
+        0.10129916666666666,
+        0.1537375
+      ],
+      "precision": [
+        0.7787106612422481,
+        0.8097282705186262
+      ],
+      "recall": [
+        0.7878185690250313,
+        0.8443199119075412
+      ]
+    }
+  },
+  "policy": {
+    "bootstrap_repetitions": 1000,
+    "bootstrap_seed": 20261109,
+    "development_recall_lower_bound": 0.8,
+    "development_recall_target": 0.82,
+    "development_runs": 300,
+    "maximum_precision_loss": 0.02,
+    "minimum_audit_precision": 0.75,
+    "policy_version": "recall-policy-v1",
+    "recall_audit_runs": 150,
+    "recall_audit_start": "2029-01-01T00:00:00+00:00"
+  },
+  "prior_model_sha256": "5b56f81639d7bd297dd9b75c2a592457172c1e9b35f9f2d02cb20b6dd14f662c",
+  "promoted_model_version": "model-v2-recall-50d731a331ac",
+  "promotion_passed": true
+}
