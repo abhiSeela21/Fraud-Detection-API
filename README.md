@@ -4,6 +4,9 @@ A portfolio API for scoring **synthetic** payment transactions, with an interact
 React demo as an independent client. Detection combines explicit
 rules and a lightweight classifier. This project never processes real payments.
 
+- [Live Fraud Lab demo](https://fraud-detection-demo-76zx.onrender.com/)
+- [Interactive API docs](https://fraud-detection-demo-76zx.onrender.com/api/docs)
+
 ## Status
 
 Local API and interactive demo implemented. Product decisions are recorded in [docs/design.md](docs/design.md).
@@ -17,7 +20,8 @@ verified model and migrated database are available. Request limits, expiry clean
 safe request logging and consistent API errors are implemented and tested against
 PostgreSQL, including concurrent retry/cap checks. The React demo includes a guided
 review, configurable simulations, manual scoring, alert investigation and feedback.
-Public deployment verification remains outstanding; nothing is publicly hosted yet.
+The demo and API are live on Render Free with Neon Free PostgreSQL. The first
+request after a period of inactivity may take longer while the service wakes up.
 
 ## Try the local demo
 
@@ -195,8 +199,6 @@ To try scoring, create an API session using `/docs`, authorize with its bearer
 token, request a simulation batch, then submit a returned transaction to
 `/v1/transactions/score`. Inspect `/v1/alerts` and apply a feedback label.
 
-Hosting must cost $0 with no payment method. Free-plan verification and deployment
-instructions are in [the deployment guide](docs/deployment.md). A root Dockerfile
-and `render.yaml` package the demo and API under one origin for Render Free with
-Neon Free PostgreSQL. Public provisioning/verification follows a pushed, green
-commit; no hosted resources have been provisioned yet.
+The deployment uses free plans with no payment method. The root Dockerfile and
+`render.yaml` serve the demo and API from the same origin. See [the deployment
+guide](docs/deployment.md) for configuration and verification steps.
