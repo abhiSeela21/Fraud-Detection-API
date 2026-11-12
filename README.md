@@ -170,6 +170,11 @@ Its approximate 95% recall interval was 78.78%–84.43% across resampled simulat
 runs. The audit measures performance on synthetic data, and the interval includes
 recall below 80%. [Full audit and uncertainty estimates](docs/evaluation/recall-policy/report.md).
 
+Burst and travel runs accounted for 408 of the 674 missed fraud cases at threshold
+38. The burst scenario alone missed 239 at both thresholds. Amount spikes accounted
+for 48 of the 74 extra fraud cases caught and 26 of the 37 additional false alerts.
+[Breakdown by scenario](docs/evaluation/recall-policy/scenario-errors.md).
+
 ## Train and evaluate
 
 From `backend/`:
@@ -224,9 +229,11 @@ Stored v1 score snapshots remain readable and idempotent after feature upgrades.
 Use `uv run --group training pytest` to include training-specific tests. Restart the
 API after retraining (`docker compose up -d --build api` for Compose).
 
-With the API running, `uv run python training/benchmark.py` records a small local
-HTTP load with database persistence at concurrency 1 and 4. See
-[latency evidence](docs/evaluation/latency.md) for the local benchmark results.
+The warm local scoring benchmark completed 4,320 requests with zero errors.
+Among the tested loads, four concurrent requests gave the highest throughput
+in both session modes, at 410–426 scores per second and 11–13 ms p95 latency.
+At eight concurrent requests, throughput fell and p95 rose to 29–34 ms.
+[Benchmark results and reproduction steps](docs/evaluation/latency.md).
 
 To try scoring, create an API session using `/docs`, authorize with its bearer
 token, request a simulation batch, then submit a returned transaction to

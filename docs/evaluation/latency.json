@@ -1,31 +1,88 @@
 {
   "environment": {
     "host": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
-    "architecture": "arm64",
     "logical_cpus": 8,
-    "python_client": "3.14.0",
-    "server": "Docker Compose API Python 3.12 + PostgreSQL 17; localhost HTTP"
+    "python_client": "3.14.0"
   },
   "model_version": "model-v2-recall-50d731a331ac",
   "measurements": [
     {
+      "mode": "shared",
       "concurrency": 1,
-      "requests": 99,
-      "p50_ms": 4.998042015358806,
-      "p95_ms": 11.283958097919822,
-      "p99_ms": 17.643666127696633,
-      "max_ms": 26.25120780430734,
-      "requests_per_second": 173.51782123128368
+      "requests": 720,
+      "statuses": {
+        "200": 720
+      },
+      "error_rate": 0.0,
+      "p50_ms": 3.367000026628375,
+      "p95_ms": 5.806500092148781,
+      "p99_ms": 9.269790956750512,
+      "successful_requests_per_second": 272.0760378927702
     },
     {
+      "mode": "shared",
       "concurrency": 4,
-      "requests": 99,
-      "p50_ms": 16.360624926164746,
-      "p95_ms": 29.492124915122986,
-      "p99_ms": 100.77783302403986,
-      "max_ms": 101.49958310648799,
-      "requests_per_second": 203.78075040048623
+      "requests": 720,
+      "statuses": {
+        "200": 720
+      },
+      "error_rate": 0.0,
+      "p50_ms": 8.877125103026628,
+      "p95_ms": 11.088875122368336,
+      "p99_ms": 17.96983298845589,
+      "successful_requests_per_second": 426.41926972575055
+    },
+    {
+      "mode": "shared",
+      "concurrency": 8,
+      "requests": 720,
+      "statuses": {
+        "200": 720
+      },
+      "error_rate": 0.0,
+      "p50_ms": 19.23908293247223,
+      "p95_ms": 28.889291919767857,
+      "p99_ms": 58.189624920487404,
+      "successful_requests_per_second": 390.7735648964415
+    },
+    {
+      "mode": "separate",
+      "concurrency": 1,
+      "requests": 720,
+      "statuses": {
+        "200": 720
+      },
+      "error_rate": 0.0,
+      "p50_ms": 3.7245408166199923,
+      "p95_ms": 5.402625072747469,
+      "p99_ms": 7.861874997615814,
+      "successful_requests_per_second": 255.83462097277777
+    },
+    {
+      "mode": "separate",
+      "concurrency": 4,
+      "requests": 720,
+      "statuses": {
+        "200": 720
+      },
+      "error_rate": 0.0,
+      "p50_ms": 9.120834060013294,
+      "p95_ms": 12.77545909397304,
+      "p99_ms": 35.92612501233816,
+      "successful_requests_per_second": 410.1077314041334
+    },
+    {
+      "mode": "separate",
+      "concurrency": 8,
+      "requests": 720,
+      "statuses": {
+        "200": 720
+      },
+      "error_rate": 0.0,
+      "p50_ms": 20.7417500205338,
+      "p95_ms": 33.578708069399,
+      "p99_ms": 54.722500033676624,
+      "successful_requests_per_second": 354.78913080761004
     }
-  ],
-  "limitations": "Warm local HTTP latency including database persistence; each load uses one session, so writes serialize. Concurrent arrival can change available history. No Render/network/cold-start claim. Synthetic results only."
+  ]
 }
