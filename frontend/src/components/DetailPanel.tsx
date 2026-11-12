@@ -13,10 +13,14 @@ interface Props {
 
 export function DetailPanel({ item, saving, expired, onClose, onLabel }: Props) {
   const heading = useRef<HTMLHeadingElement>(null);
+  const reviewHeading = useRef<HTMLHeadingElement>(null);
   const [failed, setFailed] = useState(false);
   const transactionId = item?.score.transaction_id;
   useEffect(() => {
-    if (transactionId) heading.current?.focus();
+    if (!transactionId || !heading.current) return;
+    const panel = heading.current.closest('aside');
+    if (panel && !panel.closest('dialog')) panel.scrollIntoView({ block: 'start' });
+    heading.current.focus({ preventScroll: true });
   }, [transactionId]);
   if (!item)
     return (
@@ -64,6 +68,18 @@ export function DetailPanel({ item, saving, expired, onClose, onLabel }: Props) 
           {title(score.recommendation)}
         </span>
       </div>
+      {score.alert_id && (
+        <button
+          className="text-button review-shortcut"
+          onClick={() => {
+            const review = reviewHeading.current;
+            review?.closest('section')?.scrollIntoView({ block: 'nearest' });
+            review?.focus({ preventScroll: true });
+          }}
+        >
+          Jump to review <ArrowUpRight size={14} />
+        </button>
+      )}
       <dl className="transaction-facts">
         <div>
           <dt>Amount</dt>
@@ -163,7 +179,9 @@ export function DetailPanel({ item, saving, expired, onClose, onLabel }: Props) 
       </section>
       {score.alert_id && (
         <section className="detail-section feedback-section">
-          <h3>Make a simulated review</h3>
+          <h3 ref={reviewHeading} tabIndex={-1}>
+            Make a simulated review
+          </h3>
           <p>How would you label this alert?</p>
           <div className="feedback-actions">
             <button

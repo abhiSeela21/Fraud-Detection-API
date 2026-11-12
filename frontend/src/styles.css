@@ -980,11 +980,15 @@ tbody tr.selected-row {
   padding: 19px 20px;
   position: sticky;
   top: 20px;
+  scroll-margin-top: 20px;
   max-height: calc(100vh - 40px);
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: #d6deeb transparent;
   min-width: 0;
+}
+.review-shortcut {
+  margin-bottom: 14px;
 }
 .detail-empty {
   display: flex;

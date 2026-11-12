@@ -5,7 +5,7 @@ test('desktop: guided review, feedback, filters, persistence and API docs', asyn
   page,
   context,
 }) => {
-  await page.setViewportSize({ width: 1440, height: 1080 });
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/');
   await expect(page.getByText('API connected', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Start guided demo', exact: true }).click();
@@ -17,8 +17,13 @@ test('desktop: guided review, feedback, filters, persistence and API docs', asyn
     timeout: 30000,
   });
   await page.getByRole('button', { name: 'Inspect an alert', exact: true }).click();
-  await expect(page.getByText('Model probability', { exact: true })).toBeVisible();
+  await expect(page.getByText('Model probability', { exact: true })).toBeInViewport({ ratio: 1 });
   await expect(page.getByText(/not the classifier’s reasoning/)).toBeVisible();
+  await page.getByRole('button', { name: 'Jump to review', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Make a simulated review' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Fraud', exact: true })).toBeInViewport({
+    ratio: 1,
+  });
   await page.getByRole('button', { name: 'Fraud', exact: true }).click();
   await expect(page.getByText('Saved: fraud', { exact: true })).toBeVisible();
   await expect(page.getByText('You’ve completed the review loop.', { exact: true })).toBeVisible();

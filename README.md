@@ -7,6 +7,16 @@ rules and a lightweight classifier. This project never processes real payments.
 - [Live Fraud Lab demo](https://fraud-detection-demo-76zx.onrender.com/)
 - [Interactive API docs](https://fraud-detection-demo-76zx.onrender.com/api/docs)
 
+<details>
+<summary>Watch the 26-second walkthrough</summary>
+
+Start the guided demo, open a flagged transaction to see its score and rule signals,
+then choose **Jump to review** and save a simulated fraud label.
+
+![Fraud Lab scores synthetic transactions, explains an alert, and saves a reviewer label.](docs/demo/walkthrough.webp)
+
+</details>
+
 ## Status
 
 Local API and interactive demo implemented. Product decisions are recorded in [docs/design.md](docs/design.md).
@@ -21,7 +31,8 @@ safe request logging and consistent API errors are implemented and tested agains
 PostgreSQL, including concurrent retry/cap checks. The React demo includes a guided
 review, configurable simulations, manual scoring, alert investigation and feedback.
 The demo and API are live on Render Free with Neon Free PostgreSQL. The first
-request after a period of inactivity may take longer while the service wakes up.
+visit after inactivity took about 45 seconds to reach the guided demo in one
+cold start check. The walkthrough above shows the flow once the API is ready.
 
 ## Try the local demo
 
@@ -193,7 +204,7 @@ API after retraining (`docker compose up -d --build api` for Compose).
 
 With the API running, `uv run python training/benchmark.py` records a small local
 HTTP load with database persistence at concurrency 1 and 4. See
-[latency evidence](docs/evaluation/latency.md); hosted cold starts are not measured.
+[latency evidence](docs/evaluation/latency.md) for the local benchmark results.
 
 To try scoring, create an API session using `/docs`, authorize with its bearer
 token, request a simulation batch, then submit a returned transaction to
