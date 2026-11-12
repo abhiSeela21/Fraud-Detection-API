@@ -6,6 +6,7 @@ rules and a lightweight classifier. This project never processes real payments.
 
 - [Live Fraud Lab demo](https://fraud-detection-demo-76zx.onrender.com/)
 - [Interactive API docs](https://fraud-detection-demo-76zx.onrender.com/api/docs)
+- [Why we picked threshold 38](#why-we-picked-threshold-38)
 
 <details>
 <summary>Watch the 26-second walkthrough</summary>
@@ -139,6 +140,36 @@ development-selected review threshold is now 38 after a separate recall-policy a
 The risk index is not a fraud probability. The model probability now receives
 sigmoid calibration fitted on a separate chronological cohort.
 
+## Why we picked threshold 38
+
+**Threshold 38 caught 74 more fraud cases and generated 37 more false alerts**
+than threshold 45 in a fresh audit of 30,000 synthetic transactions. The model
+and scores were the same for both policies. Lowering the cutoff sent transactions
+with risk scores from 38 to 44 to review.
+
+We chose 38 on 60,000 separate development transactions. It had the highest
+precision among thresholds that reached at least 82% recall, had an estimated
+lower recall bound of at least 80% when resampling whole simulation runs, and
+kept precision within two percentage points of threshold 45. Threshold 39 missed
+both recall requirements. Threshold 37 met them but had lower precision.
+We froze the choice before evaluating it on the fresh audit.
+
+| Outcome on the same 30,000 transactions | Threshold 45 | Threshold 38 | Change |
+| --- | ---: | ---: | ---: |
+| Fraud caught | 2,954 | 3,028 | +74 |
+| Missed fraud (fraud left out of review) | 748 | 674 | −74 |
+| False alerts (legitimate transactions sent to review) | 749 | 786 | +37 |
+| Total reviews | 3,703 | 3,814 | +111 |
+| Recall (share of fraud caught) | 79.79% | 81.79% | +2.00 pp |
+| Precision (share of reviews that were fraud) | 79.77% | 79.39% | −0.38 pp |
+
+The 111 extra reviews found two fraud cases for every additional false alert in
+this audit. Threshold 38 passed the audit requirements of recall above 80%,
+precision of at least 75%, and a precision drop of at most two percentage points.
+Its approximate 95% recall interval was 78.78%–84.43% across resampled simulation
+runs. The audit measures performance on synthetic data, and the interval includes
+recall below 80%. [Full audit and uncertainty estimates](docs/evaluation/recall-policy/report.md).
+
 ## Train and evaluate
 
 From `backend/`:
@@ -173,15 +204,6 @@ Calibration reduces final Brier loss from 0.0541 to 0.0383 on the same new model
 tradeoffs and model-only comparisons. Stronger category/channel results reflect
 simple generator assumptions; background fraud with no observable signal remains
 largely undetectable. All results remain synthetic.
-
-The subsequent [recall-policy audit](docs/evaluation/recall-policy/report.md) keeps
-the weights and calibration fixed. Development selected threshold **38** using an
-expanded 2027 cohort and a bootstrap recall safety margin before opening a new
-2029 cohort. On that fresh **30,000-event** audit, recall increases from **79.8% to
-81.8%** while precision decreases from **79.8% to 79.4%**: 74 extra fraud labels
-found and 37 extra false alerts. Threshold 38 passed the predefined promotion gate.
-Its approximate 95% run-cluster recall interval is **78.8%–84.4%**; this is a point
-target achieved on synthetic data, not a guarantee of future or real-world recall.
 
 Reproduce the promoted policy after training with:
 
